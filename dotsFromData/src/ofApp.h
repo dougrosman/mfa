@@ -17,28 +17,30 @@ class ofApp : public ofBaseApp{
         float x2;   // largest X
         float y2;   // largest Y
         std::vector<glm::vec2> fourteenDots;
-        
-        
     };
     
     dotFrame df;
     
-    ofTrueTypeFont font;
-    
+    // a vector for storing dot frames
     std::vector<dotFrame> dotData;
     string dataSet;
     
-    //maroon: startIndex = 82, endIndex = 4482
-    //uw: startIndex = 70, endIndex = 5240
+    // the upper and lower bounds of our dot frames,
+    // this allows us to only accept "reasonable" dot frames
+    float xMin;
+    float xMax;
+    float yMin;
+    float yMax;
     
-    int startIndex = 0;
-    int endIndex = 0;
+    int startIndex;
+    int endIndex;
     float dotSize;
-    bool print = true;
+    bool print = false;
     int incRate = 4;
     
-    int dotIndex = startIndex;
+    int dotIndex;
     
+    // The Global min and max x+y-values
     glm::vec2 gMin = {10000, 10000};
     glm::vec2 gMax = {0, 0};
     
@@ -46,24 +48,23 @@ class ofApp : public ofBaseApp{
     ofPixels savePixels;
     string saveName = "";
     int saveCount = 0;
-    float exportSize = 1080;
-    float exportWidth = 1024;
-    float exportHeight = 512;
+    float outputWidth;
+    float outputHeight;
+    
+    float drawScale = 2.20312;
+    
+    float drawX = 0;
+    float drawY = 0;
     
     bool debug = false;
+    bool outputTest = false;
+    bool record = false;
+    
     bool HD = true;
     bool twoBods = false;
     
     
-    
-    // I need:
-    // maybe I should just create a struct
-    // for an entire 14-dot frame that contains
-    // 1. the 4 min/max dot info
-    // 2. the std::vector<glm::vec2>
-    
-    // I also need:
-    // A struct instance that keeps track of the
-    // 4 min/max dot info for the ENTIRE sequence
+    // misc global variables
+    ofTrueTypeFont font;
     
 };

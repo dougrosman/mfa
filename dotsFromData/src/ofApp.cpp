@@ -2,37 +2,42 @@
 
 /**
  * This sketch takes in X+Y position data from a .txt file, which was
- * generated from the Kinect motion tracking, and generates white dots.
- * White dots are rendered to an FBO and exported frame by frame.
- */
-
-/*
- * 1. Load the file
- * 2. Parse the strings into a std::vector<glm::vec2>
- * 3. Push that vector back into a std::vector
- * 4.
- *
+ * generated from the Kinect motion tracking, and generates dots.
+ * Dot frames are rendered to an FBO and exported frame by frame.
  */
 
 void ofApp::setup()
 {
     ofBackground(0);
-    exportSize = 2048;
     
-    fbo.allocate(2048, 1024, GL_RGB);
-    savePixels.allocate(2048, 1024, GL_RGB);
+    // pix2pixHD requires either 2048x1024 or 1024x512
+    outputWidth = 2048;
+    outputHeight = 1024;
+    
+    //    gMin.x = 50.0;
+    //    gMax.x = 685;
+    //    gMin.y = 100.0;
+    //    gMax.y = 620.0;
+    
+    
+    // allocate fbo and savePixels for saving frames later
+    fbo.allocate(outputWidth, outputHeight, GL_RGB);
+    savePixels.allocate(outputWidth, outputHeight, GL_RGB);
+    
+    // clear the fbo
     fbo.begin();
-    ofClear(255,255,255, 0);
+    ofClear(0);
     fbo.end();
     
-    ofSetCircleResolution(60);
+    
     
     font.load("Arial.ttf", 20);
-    // datasets: maroon, uw
     dataSet = "amalg_02";
     startIndex = 0;
     
     ofBuffer buffer = ofBufferFromFile("colors/" + dataSet + ".txt");
+    
+    ofSetCircleResolution(60);
     dotSize = 9;
     
     if(buffer.size())
@@ -49,19 +54,22 @@ void ofApp::setup()
             // Clear the dotFrame whenever there's an empty line
             if (line.empty())
             {
-                std::cout << "SCREEEEAAM" << std::endl;
                 df.fourteenDots.clear();
+                
+                // reset the x + y coordinates of the current dotFrame
                 df.x1 = 10000;
                 df.y1 = 10000;
                 df.x2 = 0;
                 df.y2 = 0;
             }
             
+            // if there's data to parse...
             else
             {
-                // store the x+y values in a glm::vec2
+                // store the x+y values in a temporary glm::vec2
                 glm::vec2 tempXY = {ofToFloat(parsedLine[0]), ofToFloat(parsedLine[1])};
                 
+                // store the largest and smallest x/y-values of each frame
                 if(tempXY.x < df.x1)
                 {
                     df.x1 = tempXY.x;
@@ -80,10 +88,16 @@ void ofApp::setup()
                 }
                 
                 // push the glm::vec2 into the temporary vector
-                
                 df.fourteenDots.push_back(tempXY);
                 
-                if (df.fourteenDots.size() == 14)
+                xMin = 50.;
+                xMax = 685.;
+                yMin = 80.;
+                yMax = 590.;
+                
+                // if we parsed 14 dots of data, push back the frames that
+                // are within our desired size
+                if (df.fourteenDots.size() == 14 && (df.y2 - df.y1) < 380 && df.x1 > xMin && df.x2 < xMax && df.y1 > yMin && df.y2 < yMax)
                 {
                     dotData.push_back(df);
                 }
@@ -91,12 +105,12 @@ void ofApp::setup()
         }
     }
     
-    // Find the min/max of the entire sequence
     
-    std::cout << dotData.size() << std::endl;
+    
+    std::cout << "# Dot Frames: " << dotData.size() << std::endl;
     endIndex = dotData.size() - 1;
     
-    //endIndex = dotData.size() - 50;
+    // Find the min/max of the entire sequence, and store in gMin and gMax
     for(int i = startIndex; i < endIndex; i++)
     {
         dotFrame currDf = dotData[i];
@@ -119,31 +133,13 @@ void ofApp::setup()
         }
     }
     
-    gMin.x = 50.0;
-    gMax.x = 685;
-    gMin.y = 100.0;
-    gMax.y = 620.0;
-    
-//    if(gMax.y-gMin.y > gMax.x-gMin.x)
-//    {
-//        float sizeDiff = ((gMax.y - gMin.y) - (gMax.x-gMin.x))/2;
-//        gMin.x -= sizeDiff;
-//        gMax.x += sizeDiff;
-//    }
-//    else
-//    {
-//        float sizeDiff = ((gMax.x - gMin.x) - (gMax.y - gMin.y))/2;
-//        gMin.y -= sizeDiff;
-//        gMax.y += sizeDiff;
-//    }
-    
+    // add dotSize to upper and lower bounds to keep dots from being
+    // cut off in output frames
     gMin.x -= dotSize;
     gMin.y -= dotSize;
 
     gMax.x += dotSize;
     gMax.y += dotSize;
-    
-    
 }
 
 
@@ -163,42 +159,42 @@ void ofApp::update()
     }
 }
 
-
 void ofApp::draw()
 {
-    
-    ofPushMatrix();
-    ofTranslate(1000, 150);
-    ofSetColor(0, 0, 255);
-    font.drawString(ofToString(dotIndex), 0, 0);
-    
-    ofPopMatrix();
-    
     dotFrame currDf = dotData[dotIndex];
-    ofPushMatrix();
-    ofTranslate(800, 150);
-    ofSetColor(0, 255, 0);
-    font.drawString("minX = " + ofToString(currDf.x1) + " maxX = " + ofToString(currDf.x2), 0, 30);
-    font.drawString("minY = " +  ofToString(currDf.y1) + " maxY = " + ofToString(currDf.y2), 0, 60);
-    ofSetColor(255, 255, 0);
-    font.drawString("gMinX = " + ofToString(gMin.x) + " gMaxX = " + ofToString(gMax.x), 0, 90);
-    font.drawString("gMinY = " + ofToString(gMin.y) + " gMaxY = " + ofToString(gMax.y), 0, 120);
-    ofSetColor(0, 0, 255);
-    font.drawString("Global Size: " + ofToString(gMax.x - gMin.x) + ", " + ofToString(gMax.y - gMin.y), 0, 150);
-    ofPopMatrix();
-    
-    
-    ofDrawRectangle(gMin.x, gMin.y, gMax.x-gMin.x, gMax.y-gMin.y);
-    
-    
-    ofSetColor(255, 0, 0);
-    //ofDrawRectangle(currDf.x1, currDf.y1, currDf.x2-currDf.x1, currDf.y2-currDf.y1);
-    
     if(debug)
     {
+        ofPushMatrix();
+            ofTranslate(1000, 150);
+            ofSetColor(0, 0, 255);
+            font.drawString(ofToString(dotIndex), 0, 0);
+        ofPopMatrix();
+        
+        
+        
+        ofPushMatrix();
+            ofTranslate(800, 150);
+            ofSetColor(0, 255, 0);
+            font.drawString("minX = " + ofToString(currDf.x1) + " maxX = " + ofToString(currDf.x2), 0, 30);
+            font.drawString("minY = " +  ofToString(currDf.y1) + " maxY = " + ofToString(currDf.y2), 0, 60);
+            ofSetColor(255, 255, 0);
+            font.drawString("gMinX = " + ofToString(gMin.x) + " gMaxX = " + ofToString(gMax.x), 0, 90);
+            font.drawString("gMinY = " + ofToString(gMin.y) + " gMaxY = " + ofToString(gMax.y), 0, 120);
+            ofSetColor(0, 0, 255);
+            font.drawString("Global Size: " + ofToString(gMax.x - gMin.x) + ", " + ofToString(gMax.y - gMin.y), 0, 150);
+        ofPopMatrix();
+        
+        // draw global rectangle
+        ofSetColor(0, 0, 255, 200);
+        ofDrawRectangle(gMin.x, gMin.y, gMax.x-gMin.x, gMax.y-gMin.y);
+        
+        // draw current frame rectangle
+        ofSetColor(255, 0, 0, 200);
+        ofDrawRectangle(currDf.x1, currDf.y1, currDf.x2-currDf.x1, currDf.y2-currDf.y1);
+        
+        // draw current dot frame
         for(int j = 0; j < dotData[0].fourteenDots.size(); j++)
         {
-            //ofSetColor(255);
             ofColor dotColor = ofColor::fromHsb(ofMap(j, 0, dotData[0].fourteenDots.size(), 10, 245), 255, 255);
             ofSetColor(dotColor);
             ofDrawCircle(dotData[dotIndex].fourteenDots[j], dotSize);
@@ -208,54 +204,60 @@ void ofApp::draw()
             }
         }
     }
-
-    else
+    
+    // The image to output
+    else if(outputTest)
     {
-        
+        if(outputWidth == 2048)
+        {
+            ofScale(drawScale, drawScale);
+            ofTranslate(drawX, drawY);
+            
+            for(int j = 0; j < dotData[0].fourteenDots.size(); j++)
+            {
+                ofColor dotColor = ofColor::fromHsb(ofMap(j, 0, dotData[0].fourteenDots.size(), 10, 245), 255, 255);
+                ofSetColor(dotColor);
+                ofDrawCircle(dotData[dotIndex].fourteenDots[j], dotSize);
+                
+                if(twoBods)
+                {
+                    ofDrawCircle(dotData[dotIndex+1].fourteenDots[j], dotSize);
+                }
+            }
+        }
+    }
+
+    // if record
+    else if(record)
+    {
         for(int i = startIndex; i < endIndex; i++)
         {
             fbo.begin();
                 ofPushMatrix();
             
-                if(HD)
-                {
-                    //ofScale((gMax.x - gMin.x)*(1024/(gMax.y-gMin.y)), 1024/(gMax.y - gMin.y));
-                    ofScale(1.832, 1.832);
-                    ofTranslate(-gMin.x, -gMin.y);
-                    
-                    ofClear(0);
-                    for(int j = 0; j < dotData[0].fourteenDots.size(); j++)
+                    if(outputWidth == 2048)
                     {
-                        ofColor dotColor = ofColor::fromHsb(ofMap(j, 0, dotData[0].fourteenDots.size(), 10, 245), 255, 255);
-                        ofSetColor(dotColor);
-                        ofDrawCircle(dotData[i].fourteenDots[j], dotSize);
-                        if(twoBods)
+                        ofScale(drawScale, drawScale);
+                        ofTranslate(outputWidth - gMin.x, outputHeight - gMin.y);
+                        
+                        ofClear(0);
+                        for(int j = 0; j < dotData[0].fourteenDots.size(); j++)
                         {
-                            ofDrawCircle(dotData[i+1].fourteenDots[j], dotSize);
+                            ofColor dotColor = ofColor::fromHsb(ofMap(j, 0, dotData[0].fourteenDots.size(), 10, 245), 255, 255);
+                            ofSetColor(dotColor);
+                            ofDrawCircle(dotData[i].fourteenDots[j], dotSize);
+                            if(twoBods)
+                            {
+                                ofDrawCircle(dotData[i+1].fourteenDots[j], dotSize);
+                            }
                         }
                     }
-                }
-                else
-                {
-                    ofTranslate(-gMin.x, -gMin.y);
-                    ofScale(256.0/(gMax.x - gMin.x)*(exportSize/256.0), 256.0/(gMax.y-gMin.y)*(exportSize/256.0));
-                    
-                    
-                    ofClear(0);
-                    for(int j = 0; j < dotData[0].fourteenDots.size(); j++)
-                    {
-                        ofColor dotColor = ofColor::fromHsb(ofMap(j, 0, dotData[0].fourteenDots.size(), 10, 245), 255, 255);
-                        ofSetColor(dotColor);
-                        ofDrawCircle(dotData[i].fourteenDots[j], dotSize);
-                    }
-                }
-            
 
-            fbo.end();
-        
-            fbo.readToPixels(savePixels);
+                fbo.end();
+                fbo.readToPixels(savePixels);
             ofPopMatrix();
-
+            
+            // create names for output files
             if(saveCount < 10)
             {
                 saveName = "0000" + ofToString(saveCount) + ".png";
@@ -277,37 +279,127 @@ void ofApp::draw()
                 saveName = ofToString(saveCount) + ".png";
             }
             saveCount++;
-            //ofSaveImage(savePixels, "../exports/colors/" + dataSet + "/1024-colorDots/" + dataSet + "dots_" + saveName, OF_IMAGE_QUALITY_BEST);
+            
             ofSaveImage(savePixels, "/Users/dougrosman/openFrameworks/of_v20190120_osx_release/apps/possible_bodies/whiteDotsFromData/bin/exports/colors/" + dataSet + "/dots_" + saveName, OF_IMAGE_QUALITY_BEST);
             std::cout << saveName << std::endl;
-//            std::cout << "gMin.x: " << gMin.x << std::endl;
-//            std::cout << "gMin.y: " << gMin.y << std::endl;
-//            std::cout << "gMax.x: " << gMax.x << std::endl;
-//            std::cout << "gMax.y: " << gMax.y << std::endl;
         }
     
         std::exit(1);
+    }
+    // if other modes are all false for some reason...
+    else
+    {
+        debug = true;
     }
 }
 
 void ofApp::keyPressed(int key)
 {
-    if(key == '.' && dotIndex < dotData.size())
+    switch(key)
     {
-        dotIndex+=incRate;
-    }
-    else if(key == ',' && dotIndex > 0)
-    {
-        dotIndex-=incRate;
-    }
-    else if(key == '[' && incRate > 0)
-    {
-        incRate--;
-    }
-    else if(key == ']' && incRate < 20)
-    {
-        incRate++;
-    }
     
+    // advance dot frame during debug
+    case '.':
+        if(dotIndex < dotData.size() - incRate - 1) dotIndex+=incRate;
+        break;
+        
+    case ',':
+        if(dotIndex > 0) dotIndex-=incRate;
+        break;
     
+    // change incRate
+    case '[':
+        if(incRate > 0) incRate--;
+        break;
+        
+    case ']':
+        if(incRate < 100) incRate++;
+        break;
+    
+    // change drawScale
+    case '-':
+        if(drawScale > 0) drawScale-=.015625;
+            std::cout << "------------------------" << std::endl;
+            std::cout << "drawX =       " << drawX << std::endl;
+            std::cout << "drawY =       " << drawY << std::endl;
+            std::cout << "drawScale =   " << drawScale << std::endl;
+            std::cout << "" << std::endl;
+        break;
+    
+    case '=':
+        if(drawScale < 4) drawScale+=.015625;
+            std::cout << "------------------------" << std::endl;
+            std::cout << "drawX =       " << drawX << std::endl;
+            std::cout << "drawY =       " << drawY << std::endl;
+            std::cout << "drawScale =   " << drawScale << std::endl;
+            std::cout << "" << std::endl;
+        break;
+    
+    // switch modes (debug, outputTest, record)
+    case 'b':
+    case 'B':
+        outputTest = false;
+        record = false;
+        debug = true;
+        break;
+            
+    case 'o':
+    case 'O':
+        debug = false;
+        record = false;
+        outputTest = true;
+        break;
+            
+    case 'r':
+    case 'R':
+        debug = false;
+        outputTest = false;
+        record = true;
+        break;
+            
+    case '2':
+        twoBods =! twoBods;
+        break;
+    
+    // draw position
+    case 'w':
+    case 'W':
+        drawY-=4;
+        std::cout << "------------------------" << std::endl;
+        std::cout << "drawX =       " << drawX << std::endl;
+        std::cout << "drawY =       " << drawY << std::endl;
+        std::cout << "drawScale =   " << drawScale << std::endl;
+        std::cout << "" << std::endl;
+        break;
+        
+    case 's':
+    case 'S':
+        drawY+=4;
+        std::cout << "------------------------" << std::endl;
+        std::cout << "drawX =       " << drawX << std::endl;
+        std::cout << "drawY =       " << drawY << std::endl;
+        std::cout << "drawScale =   " << drawScale << std::endl;
+        std::cout << "" << std::endl;
+        break;
+        
+    case 'a':
+    case 'A':
+        drawX-=4;
+        std::cout << "------------------------" << std::endl;
+        std::cout << "drawX =       " << drawX << std::endl;
+        std::cout << "drawY =       " << drawY << std::endl;
+        std::cout << "drawScale =   " << drawScale << std::endl;
+        std::cout << "" << std::endl;
+        break;
+        
+    case 'd':
+    case 'D':
+        drawX+=4;
+        std::cout << "------------------------" << std::endl;
+        std::cout << "drawX =       " << drawX << std::endl;
+        std::cout << "drawY =       " << drawY << std::endl;
+        std::cout << "drawScale =   " << drawScale << std::endl;
+        std::cout << "" << std::endl;
+        break;
+    }
 }
