@@ -278,7 +278,7 @@ void ofApp::draw()
             }
             saveCount++;
             
-            ofSaveImage(savePixels, "/Users/dougrosman/openFrameworks/of_v20190323_osx_release/apps/mfa/dotsFromData/bin/exports/colors/" + dataSet + "_" + ofToString(outputWidth) + "/dots_" + saveName, OF_IMAGE_QUALITY_BEST);
+            ofSaveImage(savePixels, "../exports/colors/" + dataSet + "_" + ofToString(outputWidth) + "/dots_" + saveName, OF_IMAGE_QUALITY_BEST);
             std::cout << saveName << std::endl;
         }
     
