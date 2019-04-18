@@ -10,6 +10,8 @@ void ofApp::setup()
 {
     ofBackground(0);
     
+    //refImage.load("/Users/dougrosman/openFrameworks/of_v20190323_osx_release/apps/mfa/dotsFromData/bin/reference/birthday_dots-0052.png");
+    
     // pix2pixHD requires either 2048x1024 or 1024x512
     outputWidth = 2048;
     outputHeight = 1024;
@@ -208,6 +210,8 @@ void ofApp::draw()
     // The image to output
     else if(outputTest)
     {
+//        ofSetColor(255);
+//        refImage.draw(0, 0);
         if(outputWidth == 2048)
         {
             ofScale(drawScale, drawScale);
@@ -216,7 +220,7 @@ void ofApp::draw()
             for(int j = 0; j < dotData[0].fourteenDots.size(); j++)
             {
                 ofColor dotColor = ofColor::fromHsb(ofMap(j, 0, dotData[0].fourteenDots.size(), 10, 245), 255, 255);
-                ofSetColor(dotColor);
+                ofSetColor(dotColor, 100);
                 ofDrawCircle(dotData[dotIndex].fourteenDots[j], dotSize);
                 
                 if(twoBods)
@@ -238,7 +242,7 @@ void ofApp::draw()
                     if(outputWidth == 2048)
                     {
                         ofScale(drawScale, drawScale);
-                        ofTranslate(outputWidth - gMin.x, outputHeight - gMin.y);
+                        ofTranslate(drawX, drawY);
                         
                         ofClear(0);
                         for(int j = 0; j < dotData[0].fourteenDots.size(); j++)
@@ -280,7 +284,7 @@ void ofApp::draw()
             }
             saveCount++;
             
-            ofSaveImage(savePixels, "/Users/dougrosman/openFrameworks/of_v20190120_osx_release/apps/possible_bodies/whiteDotsFromData/bin/exports/colors/" + dataSet + "/dots_" + saveName, OF_IMAGE_QUALITY_BEST);
+            ofSaveImage(savePixels, "/Users/dougrosman/openFrameworks/of_v20190323_osx_release/apps/mfa/dotsFromData/bin/exports/colors/" + dataSet + "/dots_" + saveName, OF_IMAGE_QUALITY_BEST);
             std::cout << saveName << std::endl;
         }
     
@@ -364,7 +368,7 @@ void ofApp::keyPressed(int key)
     // draw position
     case 'w':
     case 'W':
-        drawY-=4;
+        drawY-=1;
         std::cout << "------------------------" << std::endl;
         std::cout << "drawX =       " << drawX << std::endl;
         std::cout << "drawY =       " << drawY << std::endl;
@@ -374,7 +378,7 @@ void ofApp::keyPressed(int key)
         
     case 's':
     case 'S':
-        drawY+=4;
+        drawY+=1;
         std::cout << "------------------------" << std::endl;
         std::cout << "drawX =       " << drawX << std::endl;
         std::cout << "drawY =       " << drawY << std::endl;
@@ -384,7 +388,7 @@ void ofApp::keyPressed(int key)
         
     case 'a':
     case 'A':
-        drawX-=4;
+        drawX-=1;
         std::cout << "------------------------" << std::endl;
         std::cout << "drawX =       " << drawX << std::endl;
         std::cout << "drawY =       " << drawY << std::endl;
@@ -394,7 +398,7 @@ void ofApp::keyPressed(int key)
         
     case 'd':
     case 'D':
-        drawX+=4;
+        drawX+=1;
         std::cout << "------------------------" << std::endl;
         std::cout << "drawX =       " << drawX << std::endl;
         std::cout << "drawY =       " << drawY << std::endl;

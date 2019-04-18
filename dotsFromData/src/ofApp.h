@@ -36,7 +36,7 @@ class ofApp : public ofBaseApp{
     int endIndex;
     float dotSize;
     bool print = false;
-    int incRate = 4;
+    int incRate = 1;
     
     int dotIndex;
     
@@ -51,10 +51,10 @@ class ofApp : public ofBaseApp{
     float outputWidth;
     float outputHeight;
     
-    float drawScale = 2.20312;
+    float drawScale = 2.21874;
     
-    float drawX = 0;
-    float drawY = 0;
+    float drawX = 116;
+    float drawY = -94;
     
     bool debug = false;
     bool outputTest = false;
@@ -66,5 +66,7 @@ class ofApp : public ofBaseApp{
     
     // misc global variables
     ofTrueTypeFont font;
+    
+    ofImage refImage;
     
 };
