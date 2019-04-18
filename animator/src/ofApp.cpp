@@ -300,7 +300,9 @@ void ofApp::draw()
                     {
                         ofColor dotColor = ofColor::fromHsb(ofMap(j, 0, dotData[0].fourteenDots.size(), 10, 245), 255, 255);
                         ofSetColor(dotColor);
-                        ofDrawCircle(dotData[i].fourteenDots[j], dotSize);
+                        ofDrawCircle(dotData[dotIndex].fourteenDots[j] + proxyFrame[j].pos, dotSize);
+                        
+                        
                         if(twoBods)
                         {
                             ofDrawCircle(dotData[i+1].fourteenDots[j], dotSize);
