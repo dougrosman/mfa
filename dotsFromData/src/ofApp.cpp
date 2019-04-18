@@ -13,8 +13,8 @@ void ofApp::setup()
     //refImage.load("/Users/dougrosman/openFrameworks/of_v20190323_osx_release/apps/mfa/dotsFromData/bin/reference/birthday_dots-0052.png");
     
     // pix2pixHD requires either 2048x1024 or 1024x512
-    outputWidth = 2048;
-    outputHeight = 1024;
+    outputWidth = 1024;
+    outputHeight = 512;
     
     //    gMin.x = 50.0;
     //    gMax.x = 685;
@@ -212,23 +212,22 @@ void ofApp::draw()
     {
 //        ofSetColor(255);
 //        refImage.draw(0, 0);
-        if(outputWidth == 2048)
+        
+        ofScale(drawScale * (outputWidth/2048), drawScale * (outputWidth/2048));
+        ofTranslate(drawX, drawY);
+        
+        for(int j = 0; j < dotData[0].fourteenDots.size(); j++)
         {
-            ofScale(drawScale, drawScale);
-            ofTranslate(drawX, drawY);
+            ofColor dotColor = ofColor::fromHsb(ofMap(j, 0, dotData[0].fourteenDots.size(), 10, 245), 255, 255);
+            ofSetColor(dotColor);
+            ofDrawCircle(dotData[dotIndex].fourteenDots[j], dotSize);
             
-            for(int j = 0; j < dotData[0].fourteenDots.size(); j++)
+            if(twoBods)
             {
-                ofColor dotColor = ofColor::fromHsb(ofMap(j, 0, dotData[0].fourteenDots.size(), 10, 245), 255, 255);
-                ofSetColor(dotColor, 100);
-                ofDrawCircle(dotData[dotIndex].fourteenDots[j], dotSize);
-                
-                if(twoBods)
-                {
-                    ofDrawCircle(dotData[dotIndex+1].fourteenDots[j], dotSize);
-                }
+                ofDrawCircle(dotData[dotIndex+1].fourteenDots[j], dotSize);
             }
         }
+        
     }
 
     // if record
@@ -238,25 +237,20 @@ void ofApp::draw()
         {
             fbo.begin();
                 ofPushMatrix();
+                    ofScale(drawScale * (outputWidth/2048), drawScale * (outputWidth/2048));
+                    ofTranslate(drawX, drawY);
             
-                    if(outputWidth == 2048)
+                    ofClear(0);
+                    for(int j = 0; j < dotData[0].fourteenDots.size(); j++)
                     {
-                        ofScale(drawScale, drawScale);
-                        ofTranslate(drawX, drawY);
-                        
-                        ofClear(0);
-                        for(int j = 0; j < dotData[0].fourteenDots.size(); j++)
+                        ofColor dotColor = ofColor::fromHsb(ofMap(j, 0, dotData[0].fourteenDots.size(), 10, 245), 255, 255);
+                        ofSetColor(dotColor);
+                        ofDrawCircle(dotData[i].fourteenDots[j], dotSize);
+                        if(twoBods)
                         {
-                            ofColor dotColor = ofColor::fromHsb(ofMap(j, 0, dotData[0].fourteenDots.size(), 10, 245), 255, 255);
-                            ofSetColor(dotColor);
-                            ofDrawCircle(dotData[i].fourteenDots[j], dotSize);
-                            if(twoBods)
-                            {
-                                ofDrawCircle(dotData[i+1].fourteenDots[j], dotSize);
-                            }
+                            ofDrawCircle(dotData[i+1].fourteenDots[j], dotSize);
                         }
                     }
-
                 fbo.end();
                 fbo.readToPixels(savePixels);
             ofPopMatrix();
@@ -284,7 +278,7 @@ void ofApp::draw()
             }
             saveCount++;
             
-            ofSaveImage(savePixels, "/Users/dougrosman/openFrameworks/of_v20190323_osx_release/apps/mfa/dotsFromData/bin/exports/colors/" + dataSet + "/dots_" + saveName, OF_IMAGE_QUALITY_BEST);
+            ofSaveImage(savePixels, "/Users/dougrosman/openFrameworks/of_v20190323_osx_release/apps/mfa/dotsFromData/bin/exports/colors/" + dataSet + "_" + ofToString(outputWidth) + "/dots_" + saveName, OF_IMAGE_QUALITY_BEST);
             std::cout << saveName << std::endl;
         }
     
