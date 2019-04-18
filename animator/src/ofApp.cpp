@@ -288,8 +288,7 @@ void ofApp::draw()
     // if record
     else if(record)
     {
-        for(int i = startIndex; i < endIndex; i++)
-        {
+        
             fbo.begin();
                 ofPushMatrix();
                     ofScale(drawScale * (outputWidth/2048), drawScale * (outputWidth/2048));
@@ -301,12 +300,6 @@ void ofApp::draw()
                         ofColor dotColor = ofColor::fromHsb(ofMap(j, 0, dotData[0].fourteenDots.size(), 10, 245), 255, 255);
                         ofSetColor(dotColor);
                         ofDrawCircle(dotData[dotIndex].fourteenDots[j] + proxyFrame[j].pos, dotSize);
-                        
-                        
-                        if(twoBods)
-                        {
-                            ofDrawCircle(dotData[i+1].fourteenDots[j], dotSize);
-                        }
                     }
                 fbo.end();
                 fbo.readToPixels(savePixels);
@@ -337,9 +330,7 @@ void ofApp::draw()
             
             ofSaveImage(savePixels, "../exports/colors/" + dataSet + "_" + ofToString(outputWidth) + "/dots_" + saveName, OF_IMAGE_QUALITY_BEST);
             std::cout << saveName << std::endl;
-        }
-    
-        std::exit(1);
+        
     }
     // if other modes are all false for some reason...
     else
@@ -408,7 +399,7 @@ void ofApp::keyPressed(int key)
     case 'r':
     case 'R':
         debug = false;
-        outputTest = false;
+        outputTest = true;
         record = true;
         break;
             
