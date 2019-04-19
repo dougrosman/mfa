@@ -17,6 +17,7 @@ class ofApp : public ofBaseApp{
         float y1;   // smallest Y
         float x2;   // largest X
         float y2;   // largest Y
+        float dotSize;
         std::vector<glm::vec2> fourteenDots;
     };
     
@@ -24,6 +25,8 @@ class ofApp : public ofBaseApp{
     
     std::vector<dotParticle> proxyFrame;
     std::vector<dotParticle> proxyFrame2;
+    
+    std::vector<std::vector<dotParticle>> allProxyFrames;
     
     
     // a vector for storing dot frames
@@ -42,6 +45,7 @@ class ofApp : public ofBaseApp{
     float dotSize;
     bool print = false;
     int incRate = 1;
+    int currIndex;
     
     int dotIndex;
     
@@ -61,17 +65,19 @@ class ofApp : public ofBaseApp{
     float drawX = 116;
     float drawY = -94;
     
-    bool debug = false;
     bool outputTest = true;
     bool record = false;
+    
+    bool shouldStop = false;
     
     bool HD = true;
     bool twoBods = false;
     
+    // animate modes
+    bool incIndex = false;
     
-    // misc global variables
-    ofTrueTypeFont font;
     
+    // misc global variables    
     ofImage refImage;
     
 };

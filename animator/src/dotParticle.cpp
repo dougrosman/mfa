@@ -41,8 +41,7 @@ void dotParticle::checkWalls()
     }
 }
 
-void dotParticle::melt()
+void dotParticle::melt(float xAccel, float lowerY, float upperY)
 {
-    //vel = {ofRandom(-10, 10), ofRandom(-10, 10), 0};
-    accel = {ofRandom(-0.002, 0.002), ofRandom(.008, .01)};
+    accel = {ofRandom(-xAccel, xAccel), ofRandom(lowerY, upperY)};
 }

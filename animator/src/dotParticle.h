@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include "dotParticle.h"
+//#include "ofApp.h"
 
 class dotParticle {
     
@@ -9,7 +10,10 @@ public:
     // functions
     void update();
     void checkWalls();
-    void melt();
+    
+    
+    void melt(float xAccel, float lowerY, float upperY);
+    
     
     // variables
     glm::vec2 pos;
