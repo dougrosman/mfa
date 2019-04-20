@@ -120,24 +120,55 @@ void ofApp::setup()
         allDotFramesReference.push_back(dots);
     }
     
-    // make all the changes to the dot frames in proxy. Use Reference to
-    // refer back to original dot frame positions.
+    // Set up our proxyFrame
+    for(int i = 0; i < 14; i++)
+    {
+        Dot proxy;
+        proxy.pos = {0, 0, 0};
+        proxyFrame.push_back(proxy);
+    }
+    
+    // make all the changes to the dot frames in proxy. Use Reference to refer back to original dot frame positions.
     allDotFramesProxy = allDotFramesReference;
     
-    // okay, so now we have a vector or vectors that contain 14 Dots, which each
-    // have a position, velocity, acceleration, etc...
+    // okay, so now we have a vector or vectors that contain 14 Dots, which each have a position, velocity, acceleration, etc...
 }
 
 ////////// UPDATE ///////////////////// UPDATE //////////
 
 void ofApp::update()
 {
+    //melt test
+    if(shouldMelt)
+    {
+        for(auto& d : proxyFrame)
+        {
+            d.melt(0.04, 0.06, 0.09);
+        }
+        shouldMelt = !shouldMelt;
+    }
 
     if(shouldCycle)
     {
         cycle();
     }
     
+    for(auto& d : proxyFrame)
+    {
+        //d.checkWalls();
+        d.update();
+    }
+    
+    for(int q = 0; q < 30000; q+=9999)
+    {
+    
+        for(int i = 0; i < allDotFramesProxy[dotFrameIndex].size(); i++)
+        {
+            allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos = allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos + proxyFrame[i].pos;
+            allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].checkWalls();
+            //allDotFramesProxy[dotFrameIndex][i].update();
+        }
+    }
 }
 
 ////////// DRAW ///////////////////// DRAW //////////
@@ -146,7 +177,11 @@ void ofApp::draw()
     fbo.begin();
         ofClear(0);
     
-        drawDotFrame(allDotFramesProxy[ofWrap(dotFrameIndex, 0, allDotFramesProxy.size())]);
+    for(int q = 0; q < 30000; q+=9999)
+    {
+        drawDotFrame(allDotFramesProxy[ofWrap(dotFrameIndex+q, 0, allDotFramesProxy.size())]);
+    }
+//drawDotFrame(allDotFramesProxy[ofWrap(dotFrameIndex+2000, 0, allDotFramesProxy.size())]);
     
         fbo.end();
     fbo.draw(0, 0);
@@ -190,11 +225,14 @@ void ofApp::draw()
 // draws the dot frame
 void ofApp::drawDotFrame(std::vector<Dot> dotFrame)
 {
+    
     for(int i = 0; i < 14; i++)
     {
         ofSetColor(dotFrame[i].color);
         ofDrawCircle(dotFrame[i].pos, dotFrame[i].size);
     }
+    
+    
 }
 
 // plays back frames in their original order;
@@ -216,8 +254,10 @@ void ofApp::keyPressed(int key)
             record = !record;
             break;
             
+        case 'm':
+        case 'M':
+            shouldMelt = !shouldMelt;
+            break;
+            
     }
 }
-
-
-

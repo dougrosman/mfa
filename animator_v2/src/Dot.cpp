@@ -13,6 +13,33 @@ Dot::Dot()
     age = 0;
 }
 
+void Dot::checkWalls()
+{
+    if(pos.x > ofGetWidth()-size)
+    {
+        pos.x = ofGetWidth()-size;
+        vel.x*=-.9;
+    }
+    
+    if(pos.x < size)
+    {
+        pos.x = size;
+        vel.x*=-.9;
+    }
+    
+    if(pos.y > ofGetHeight()-size)
+    {
+        pos.y = ofGetHeight()-size;
+        vel.y*=-.6;
+        accel.x*=.1;
+    }
+    
+    if(pos.y < size)
+    {
+        pos.y = size*2;
+        vel.y*=-.6;
+    }
+}
 
 void Dot::update()
 {
@@ -21,6 +48,11 @@ void Dot::update()
     pos += vel;
     
     age++;
+}
+
+void Dot::melt(float xAccel, float lowerY, float upperY)
+{
+    accel = {ofRandom(-xAccel, xAccel), ofRandom(lowerY, upperY), 0};
 }
 
 

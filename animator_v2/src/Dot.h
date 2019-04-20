@@ -5,12 +5,15 @@
 class Dot{
 
 	public:
-		void update();
     
     // constructor
     Dot();
-
     
+    // functions
+    void update();
+    void checkWalls();
+    void melt(float xAccel, float lowerY, float upperY);
+
     // attributes
     glm::vec3 pos;
     glm::vec3 vel;

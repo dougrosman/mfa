@@ -13,6 +13,7 @@ class ofApp : public ofBaseApp{
 		void keyPressed(int key);
     
     void drawDotFrame(std::vector<Dot> dotFrame);
+    //void drawDotFrame(std::vector<Dot> dotFrame, std::vector<Dot> proxyFrame, bool addProxy);
     void cycle();
     
     // used to store and prune incoming dot data
@@ -42,6 +43,8 @@ class ofApp : public ofBaseApp{
     std::vector<std::vector<Dot>> allDotFramesReference;
     std::vector<std::vector<Dot>> allDotFramesProxy;
     
+    std::vector<Dot> proxyFrame;
+    
     // for saving images
     ofFbo fbo;
     ofPixels savePixels;
@@ -51,7 +54,9 @@ class ofApp : public ofBaseApp{
     
     // void cycle
     float dotFrameIndex;
+    
     bool shouldCycle;
+    bool shouldMelt = false;
     
     //record
     bool record = false;
