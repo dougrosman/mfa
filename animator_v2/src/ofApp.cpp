@@ -18,6 +18,8 @@ void ofApp::setup()
     dataSet = "amalg_02";
     dotFrameIndex = 0;
     ofBackground(0);
+    numBodies = 1;
+    numDots = 0;
     
     
     // allocate fbo and savePixels for saving frames later
@@ -143,7 +145,7 @@ void ofApp::update()
     {
         for(auto& d : proxyFrame)
         {
-            d.melt(0.04, 0.06, 0.09);
+            d.melt(0.07, 0.06, 0.09);
         }
         shouldMelt = !shouldMelt;
     }
@@ -153,22 +155,38 @@ void ofApp::update()
         cycle();
     }
     
-    for(auto& d : proxyFrame)
+    if(shouldReset)
     {
-        //d.checkWalls();
-        d.update();
+        for(auto& d : proxyFrame)
+        {
+            d.reset();
+        }
+        shouldReset = !shouldReset;
     }
     
-    for(int q = 0; q < 30000; q+=9999)
-    {
     
-        for(int i = 0; i < allDotFramesProxy[dotFrameIndex].size(); i++)
+//    for(int i = 0; i < 14; i++)
+//    {
+//        //proxyFrame[i].checkWalls(true, allDotFramesReference[ofWrap(dotFrameIndex, 0, allDotFramesProxy.size())][i]);
+//        proxyFrame[i].update();
+//    }
+    
+    
+    for(int q = 0; q < allDotFramesProxy.size(); q+=allDotFramesProxy.size()/numBodies)
+    {
+        for(int i = 0; i < allDotFramesProxy[dotFrameIndex].size()-numDots; i++)
         {
             allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos = allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos + proxyFrame[i].pos;
-            allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].checkWalls();
+            
+            //allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].checkWalls(false, proxyFrame[i]);
+            proxyFrame[i].checkWalls(true, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i]);
+            proxyFrame[i].update();
             //allDotFramesProxy[dotFrameIndex][i].update();
         }
     }
+    
+    //numBodies = ofMap(ofGetMouseX(), 0, ofGetWidth(), 1, 4);
+    //numDots = ofMap(ofGetMouseY(), 0, ofGetHeight(), 2, 10);
 }
 
 ////////// DRAW ///////////////////// DRAW //////////
@@ -177,7 +195,7 @@ void ofApp::draw()
     fbo.begin();
         ofClear(0);
     
-    for(int q = 0; q < 30000; q+=9999)
+    for(int q = 0; q < allDotFramesProxy.size(); q+=allDotFramesProxy.size()/numBodies)
     {
         drawDotFrame(allDotFramesProxy[ofWrap(dotFrameIndex+q, 0, allDotFramesProxy.size())]);
     }
@@ -226,7 +244,7 @@ void ofApp::draw()
 void ofApp::drawDotFrame(std::vector<Dot> dotFrame)
 {
     
-    for(int i = 0; i < 14; i++)
+    for(int i = 0; i < 14-numDots; i++)
     {
         ofSetColor(dotFrame[i].color);
         ofDrawCircle(dotFrame[i].pos, dotFrame[i].size);
@@ -240,6 +258,8 @@ void ofApp::cycle()
 {
     dotFrameIndex++;
 }
+
+
 
 void ofApp::keyPressed(int key)
 {
@@ -257,6 +277,10 @@ void ofApp::keyPressed(int key)
         case 'm':
         case 'M':
             shouldMelt = !shouldMelt;
+            break;
+            
+        case ' ':
+            shouldReset = !shouldReset;
             break;
             
     }

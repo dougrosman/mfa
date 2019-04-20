@@ -13,31 +13,61 @@ Dot::Dot()
     age = 0;
 }
 
-void Dot::checkWalls()
+void Dot::checkWalls(bool proxy, Dot dot)
 {
-    if(pos.x > ofGetWidth()-size)
+    if(proxy)
     {
-        pos.x = ofGetWidth()-size;
-        vel.x*=-.9;
+        //glm::vec3 proxyPos = pos + dot.pos;
+        if(pos.x + dot.pos.x > ofGetWidth()-size)
+        {
+            pos.x = ofGetWidth()-size - dot.pos.x;
+            vel.x*=-.9;
+        }
+        
+        if(pos.x + dot.pos.x < size)
+        {
+            pos.x = size - dot.pos.x;
+            vel.x*=-.9;
+        }
+        
+        if(pos.y + dot.pos.y > ofGetHeight()-size)
+        {
+            pos.y = ofGetHeight()-size - dot.pos.y;
+            vel.y*=-.6;
+            accel.x*=.5;
+        }
+        
+        if(pos.y + dot.pos.y < size)
+        {
+            pos.y = size - dot.pos.y;
+            vel.y*=-.6;
+        }
     }
-    
-    if(pos.x < size)
+    else
     {
-        pos.x = size;
-        vel.x*=-.9;
-    }
-    
-    if(pos.y > ofGetHeight()-size)
-    {
-        pos.y = ofGetHeight()-size;
-        vel.y*=-.6;
-        accel.x*=.1;
-    }
-    
-    if(pos.y < size)
-    {
-        pos.y = size*2;
-        vel.y*=-.6;
+        if(pos.x > ofGetWidth()-size)
+        {
+            pos.x = ofGetWidth()-size;
+            vel.x*=-.9;
+        }
+        
+        if(pos.x < size)
+        {
+            pos.x = size;
+            vel.x*=-.9;
+        }
+        
+        if(pos.y > ofGetHeight()-size)
+        {
+            pos.y = ofGetHeight()-size;
+            vel.y*=-.6;
+        }
+        
+        if(pos.y < size)
+        {
+            pos.y = size*2;
+            vel.y*=-.6;
+        }
     }
 }
 
@@ -53,6 +83,14 @@ void Dot::update()
 void Dot::melt(float xAccel, float lowerY, float upperY)
 {
     accel = {ofRandom(-xAccel, xAccel), ofRandom(lowerY, upperY), 0};
+}
+
+void Dot::reset()
+{
+    accel = {0, 0, 0};
+    vel = {0, 0, 0};
+    pos = {0, 0, 0};
+    
 }
 
 

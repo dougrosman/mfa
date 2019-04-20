@@ -39,6 +39,9 @@ class ofApp : public ofBaseApp{
     float outputWidth;
     float outputHeight;
     
+    int numBodies;
+    int numDots;
+    
     std::vector<dotFrame> originalDotFrames;
     std::vector<std::vector<Dot>> allDotFramesReference;
     std::vector<std::vector<Dot>> allDotFramesProxy;
@@ -57,6 +60,7 @@ class ofApp : public ofBaseApp{
     
     bool shouldCycle;
     bool shouldMelt = false;
+    bool shouldReset = false;
     
     //record
     bool record = false;

@@ -11,8 +11,9 @@ class Dot{
     
     // functions
     void update();
-    void checkWalls();
+    void checkWalls(bool proxy, Dot dot);
     void melt(float xAccel, float lowerY, float upperY);
+    void reset();
 
     // attributes
     glm::vec3 pos;
