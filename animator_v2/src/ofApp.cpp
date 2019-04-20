@@ -1,14 +1,24 @@
 #include "ofApp.h"
 
+///// TO DO /////
+
+// reset function that returns dots to original frames
+// re-order amalg_02.txt so white bod comes first
+// fix ughIndex so melting can work properly (there's always one body that doesn't melt)
+// make it possible to fade in the number of dots
+// for multiple bodies, make the frames that are pulled from constant
+// when new bodies are drawn on screen, give them a random x translation so they don't all bunch up in the center
+// create score where timing can control everything
+
 ////////// SETUP ///////////////////// SETUP //////////
 
 void ofApp::setup()
 {
     // constants to set at the beginning
-    batchName = "test_02";
+    batchName = "saturday_test_02";
     outputWidth = 1024;
     outputHeight = 512;
-    ofSetFrameRate(60);
+    ofSetFrameRate(30);
     
     drawScale = 2.21874;
     drawX = 116;
@@ -18,7 +28,7 @@ void ofApp::setup()
     dataSet = "amalg_02";
     dotFrameIndex = 0;
     ofBackground(0);
-    numBodies = 1;
+    numBodies = 4;
     numDots = 0;
     
     
@@ -123,15 +133,27 @@ void ofApp::setup()
     }
     
     // Set up our proxyFrame
-    for(int i = 0; i < 14; i++)
-    {
-        Dot proxy;
-        proxy.pos = {0, 0, 0};
-        proxyFrame.push_back(proxy);
-    }
+//    for(int i = 0; i < 14; i++)
+//    {
+//        Dot proxy;
+//        proxy.pos = {0, 0, 0};
+//        proxyFrame.push_back(proxy);
+//    }
     
     // make all the changes to the dot frames in proxy. Use Reference to refer back to original dot frame positions.
     allDotFramesProxy = allDotFramesReference;
+    
+//    for(int q = 0; q < numBodies; q++)
+//    {
+//        std::vector<Dot> tempProxyFrame;
+//        for(int i = 0; i < 14; i++)
+//        {
+//            Dot proxy;
+//            proxy.pos = {0, 0, 0};
+//            tempProxyFrame.push_back(proxy);
+//        }
+//        proxyFrameUgh.push_back(tempProxyFrame);
+//    }
     
     // okay, so now we have a vector or vectors that contain 14 Dots, which each have a position, velocity, acceleration, etc...
 }
@@ -143,10 +165,25 @@ void ofApp::update()
     //melt test
     if(shouldMelt)
     {
-        for(auto& d : proxyFrame)
+        for(int q = 0; q < numBodies; q++)
         {
-            d.melt(0.07, 0.06, 0.09);
+            std::vector<Dot> tempProxyFrame;
+            for(int i = 0; i < 14; i++)
+            {
+                Dot proxy;
+                proxy.pos = {0, 0, 0};
+                proxy.vel = {0, 0, 0};
+                proxy.accel = {0, 0, 0};
+                proxy.melt(0.07, 0.06, 0.09);
+                tempProxyFrame.push_back(proxy);
+            }
+            proxyFrameUgh.push_back(tempProxyFrame);
         }
+//        for(auto& d : proxyFrame)
+//        {
+//            d.melt(0.07, 0.06, 0.09);
+//        }
+        
         shouldMelt = !shouldMelt;
     }
 
@@ -163,27 +200,39 @@ void ofApp::update()
         }
         shouldReset = !shouldReset;
     }
-    
-    
-//    for(int i = 0; i < 14; i++)
-//    {
-//        //proxyFrame[i].checkWalls(true, allDotFramesReference[ofWrap(dotFrameIndex, 0, allDotFramesProxy.size())][i]);
-//        proxyFrame[i].update();
-//    }
-    
-    
+    if(proxyFrameUgh.size() > 0)
+    {
     for(int q = 0; q < allDotFramesProxy.size(); q+=allDotFramesProxy.size()/numBodies)
     {
+        int ughIndex = ofMap(q, 0, allDotFramesProxy.size(), 0, numBodies);
         for(int i = 0; i < allDotFramesProxy[dotFrameIndex].size()-numDots; i++)
         {
-            allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos = allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos + proxyFrame[i].pos;
-            
-            //allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].checkWalls(false, proxyFrame[i]);
-            proxyFrame[i].checkWalls(true, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i]);
-            proxyFrame[i].update();
-            //allDotFramesProxy[dotFrameIndex][i].update();
+            allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos = allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos + proxyFrameUgh[ughIndex][i].pos;
+            proxyFrameUgh[ughIndex][i].checkWalls(true, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i]);
+            //proxyFrame[i].update();
         }
     }
+    
+    
+        for(int q = 0; q < allDotFramesProxy.size(); q+=allDotFramesProxy.size()/numBodies)
+        {
+            
+            int ughIndex = ofMap(q, 0, allDotFramesProxy.size(), 0, numBodies);
+            std::cout << ughIndex << std::endl;
+            for(int i = 0; i < 14; i++)
+            {
+                proxyFrameUgh[ughIndex][i].update();
+            }
+        }
+    }
+//    for(auto& d : proxyFrame)
+//    {
+//        d.update();
+//    }
+        
+        
+    
+    
     
     //numBodies = ofMap(ofGetMouseX(), 0, ofGetWidth(), 1, 4);
     //numDots = ofMap(ofGetMouseY(), 0, ofGetHeight(), 2, 10);
@@ -195,11 +244,10 @@ void ofApp::draw()
     fbo.begin();
         ofClear(0);
     
-    for(int q = 0; q < allDotFramesProxy.size(); q+=allDotFramesProxy.size()/numBodies)
-    {
-        drawDotFrame(allDotFramesProxy[ofWrap(dotFrameIndex+q, 0, allDotFramesProxy.size())]);
-    }
-//drawDotFrame(allDotFramesProxy[ofWrap(dotFrameIndex+2000, 0, allDotFramesProxy.size())]);
+        for(int q = 0; q < allDotFramesProxy.size(); q+=allDotFramesProxy.size()/numBodies)
+        {
+            drawDotFrame(allDotFramesProxy[ofWrap(dotFrameIndex+q, 0, allDotFramesProxy.size())]);
+        }
     
         fbo.end();
     fbo.draw(0, 0);
@@ -277,10 +325,24 @@ void ofApp::keyPressed(int key)
         case 'm':
         case 'M':
             shouldMelt = !shouldMelt;
+            //proxyFrameUgh.clear();
             break;
             
         case ' ':
+            proxyFrameUgh.clear();
             shouldReset = !shouldReset;
+            break;
+            
+        case '-': if(numDots < 14) { numDots++; }
+            break;
+            
+        case '=': if (numDots > 0) { numDots--; }
+            break;
+            
+        case '9': if(numBodies > 0) { numBodies--; }
+            break;
+            
+        case '0': if (numBodies > 0) { numBodies++; }
             break;
             
     }

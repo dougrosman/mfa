@@ -47,6 +47,7 @@ class ofApp : public ofBaseApp{
     std::vector<std::vector<Dot>> allDotFramesProxy;
     
     std::vector<Dot> proxyFrame;
+    std::vector<std::vector<Dot>> proxyFrameUgh;
     
     // for saving images
     ofFbo fbo;

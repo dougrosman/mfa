@@ -17,7 +17,6 @@ void Dot::checkWalls(bool proxy, Dot dot)
 {
     if(proxy)
     {
-        //glm::vec3 proxyPos = pos + dot.pos;
         if(pos.x + dot.pos.x > ofGetWidth()-size)
         {
             pos.x = ofGetWidth()-size - dot.pos.x;
