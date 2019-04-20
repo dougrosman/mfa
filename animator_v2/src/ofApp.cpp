@@ -1,17 +1,24 @@
 #include "ofApp.h"
 
+////////// SETUP ///////////////////// SETUP //////////
 
 void ofApp::setup()
 {
     // constants to set at the beginning
+    batchName = "test_02";
     outputWidth = 1024;
     outputHeight = 512;
+    ofSetFrameRate(60);
+    
     drawScale = 2.21874;
     drawX = 116;
     drawY = -94;
     dotSize = 9 * (drawScale * outputWidth/2048);
     ofSetCircleResolution(80);
     dataSet = "amalg_02";
+    dotFrameIndex = 0;
+    ofBackground(0);
+    
     
     // allocate fbo and savePixels for saving frames later
     fbo.allocate(outputWidth, outputHeight, GL_RGB);
@@ -100,7 +107,7 @@ void ofApp::setup()
     {
         // create a temporary dots vector
         std::vector<Dot> dots;
-        for(int j = 0; j < 14; j)
+        for(int j = 0; j < 14; j++)
         {
             Dot d;
             d.pos = originalDotFrames[i].fourteenDots[j];
@@ -113,24 +120,104 @@ void ofApp::setup()
         allDotFramesReference.push_back(dots);
     }
     
+    // make all the changes to the dot frames in proxy. Use Reference to
+    // refer back to original dot frame positions.
+    allDotFramesProxy = allDotFramesReference;
     
+    // okay, so now we have a vector or vectors that contain 14 Dots, which each
+    // have a position, velocity, acceleration, etc...
 }
 
+////////// UPDATE ///////////////////// UPDATE //////////
 
 void ofApp::update()
 {
 
+    if(shouldCycle)
+    {
+        cycle();
+    }
+    
 }
 
-
+////////// DRAW ///////////////////// DRAW //////////
 void ofApp::draw()
 {
-
+    fbo.begin();
+        ofClear(0);
+    
+        drawDotFrame(allDotFramesProxy[ofWrap(dotFrameIndex, 0, allDotFramesProxy.size())]);
+    
+        fbo.end();
+    fbo.draw(0, 0);
+    
+    if(record)
+    {
+        fbo.readToPixels(savePixels);
+        
+        // create names for output files
+        if(saveCount < 10)
+        {
+            saveName = "0000" + ofToString(saveCount) + ".png";
+        }
+        else if(saveCount < 100 && saveCount > 9)
+        {
+            saveName = "000" + ofToString(saveCount) + ".png";
+        }
+        else if(saveCount < 1000 && saveCount > 99)
+        {
+            saveName = "00" + ofToString(saveCount) + ".png";
+        }
+        else if(saveCount < 10000 && saveCount > 999)
+        {
+            saveName = "0" + ofToString(saveCount) + ".png";
+        }
+        else
+        {
+            saveName = ofToString(saveCount) + ".png";
+        }
+        saveCount++;
+        
+        ofSaveImage(savePixels, "../exports/" + batchName + "_" + ofToString(outputWidth) + "/" + batchName + "_" + saveName, OF_IMAGE_QUALITY_BEST);
+        std::cout << saveName << std::endl;
+    }
+    
 }
 
+////////// FUNCTIONS ///////////////////// FUNCTIONS //////////
+
+
+// draws the dot frame
+void ofApp::drawDotFrame(std::vector<Dot> dotFrame)
+{
+    for(int i = 0; i < 14; i++)
+    {
+        ofSetColor(dotFrame[i].color);
+        ofDrawCircle(dotFrame[i].pos, dotFrame[i].size);
+    }
+}
+
+// plays back frames in their original order;
+void ofApp::cycle()
+{
+    dotFrameIndex++;
+}
 
 void ofApp::keyPressed(int key)
 {
-
+    switch(key) {
+        case 'c':
+        case 'C':
+            shouldCycle = !shouldCycle;
+            break;
+        
+        case 'r':
+        case 'R':
+            record = !record;
+            break;
+            
+    }
 }
+
+
 

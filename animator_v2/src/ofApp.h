@@ -12,6 +12,9 @@ class ofApp : public ofBaseApp{
 
 		void keyPressed(int key);
     
+    void drawDotFrame(std::vector<Dot> dotFrame);
+    void cycle();
+    
     // used to store and prune incoming dot data
     struct dotFrame {
         float x1;   // smallest X
@@ -45,5 +48,15 @@ class ofApp : public ofBaseApp{
     
     // loading dot data
     string dataSet;
+    
+    // void cycle
+    float dotFrameIndex;
+    bool shouldCycle;
+    
+    //record
+    bool record = false;
+    string batchName = "";
+    string saveName = "";
+    int saveCount = 0;
     
 };
