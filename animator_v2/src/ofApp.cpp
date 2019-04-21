@@ -497,11 +497,77 @@ void ofApp::score()
     
     /// PHASE 3 /// PHASE 3 /// PHASE 3 /// PHASE 3 /// PHASE 3
     
-    // 5. fade in third bod
+    // 9. fade in third bod
     if(fc > 8179 && (int)fc % 15 == 0 && numDotsInFrame[2] < 14)
     {
         numDotsInFrame[2]++;
     }
+    
+    // cycle for 3000 frames
+    
+    // 10. add in remaining 7 bods
+    
+    if(fc == 11800) { numDotsInFrame[3] = 14; }
+    if(fc == 12300) { numDotsInFrame[4] = 14; }
+    if(fc == 12700) { numDotsInFrame[5] = 14; }
+    if(fc == 13000) { numDotsInFrame[6] = 14; }
+    if(fc == 13200) { numDotsInFrame[7] = 14; }
+    if(fc == 13300) { numDotsInFrame[8] = 14; }
+    if(fc == 13350) { numDotsInFrame[9] = 14; }
+    
+    // 11 EXPLODE
+    
+    if(fc == 13800)
+    {
+        stopCycleTime = 1;
+        tempFc = fc;
+        explodeX = 30;
+        explodeY = 30;
+        shouldExplode = true;
+    }
+    
+     // 12 stop cycling during EXPLODE
+    if(fc > 13800 && fc - tempFc == stopCycleTime)
+    {
+        shouldCycle = false;
+    }
+    
+    /// EPILOGUE /// EPILOGUE /// EPILOGUE /// EPILOGUE /// EPILOGUE
+    
+    // 13 reset all bods
+    if(fc == 14300)
+    {
+        resetTime = 630;
+        currFrame = ofGetFrameNum();
+        shouldReset = !shouldReset;
+    }
+    
+    // 14 fade away bods dot by dot
+    if(fc > 14299)
+    {
+        if((int) fc % (60/tempDotsInFrameIndex) == 0)
+        {
+            if(tempDotsInFrameIndex > 0)
+            {
+                numDotsInFrame[tempDotsInFrameIndex]--;
+                
+                if(numDotsInFrame[tempDotsInFrameIndex] == 0)
+                {
+                    tempDotsInFrameIndex--;
+                }
+            }
+            else
+            {
+                if(numDotsInFrame[tempDotsInFrameIndex] > 1)
+                {
+                    numDotsInFrame[tempDotsInFrameIndex]--;
+                }
+            }
+        }
+        
+    }
+    
+    
     
     
     

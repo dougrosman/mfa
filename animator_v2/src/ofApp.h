@@ -84,6 +84,8 @@ class ofApp : public ofBaseApp{
     bool shouldClear = false;
     float currFrame;
     
+    int tempDotsInFrameIndex = 9;
+    
     //record
     bool record = false;
     string batchName = "";
