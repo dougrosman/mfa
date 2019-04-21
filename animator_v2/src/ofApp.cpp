@@ -235,7 +235,7 @@ void ofApp::update()
             int ughIndex = q;
             for(int i = 0; i < allDotFramesProxy[dotFrameIndex].size()-numDots; i++)
             {
-                proxyFrameUgh[ughIndex][i].checkWalls(true, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i]);
+                proxyFrameUgh[ughIndex][i].checkWalls(true, allDotFramesReference[ofWrap(dotFrameIndex + dotIndexMods[q], 0, allDotFramesProxy.size())][i]);
                 allDotFramesProxy[ofWrap(dotFrameIndex + dotIndexMods[q], 0, allDotFramesProxy.size())][i].pos = allDotFramesReference[ofWrap(dotFrameIndex + dotIndexMods[q], 0, allDotFramesProxy.size())][i].pos + proxyFrameUgh[ughIndex][i].pos;
                 
                 
@@ -535,9 +535,9 @@ void ofApp::score()
     /// EPILOGUE /// EPILOGUE /// EPILOGUE /// EPILOGUE /// EPILOGUE
     
     // 13 reset all bods
-    if(fc == 14300)
+    if(fc == 14500)
     {
-        resetTime = 630;
+        resetTime = 1260;
         currFrame = ofGetFrameNum();
         shouldReset = !shouldReset;
     }
@@ -545,7 +545,7 @@ void ofApp::score()
     // 14 fade away bods dot by dot
     if(fc > 14299)
     {
-        if((int) fc % (60/tempDotsInFrameIndex) == 0)
+        if((int) fc % (int)(60/tempDotsInFrameIndex) == 0)
         {
             if(tempDotsInFrameIndex > 0)
             {
