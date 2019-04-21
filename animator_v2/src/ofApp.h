@@ -62,6 +62,7 @@ class ofApp : public ofBaseApp{
     bool shouldCycle;
     bool shouldMelt = false;
     bool shouldReset = false;
+    float currFrame;
     
     //record
     bool record = false;

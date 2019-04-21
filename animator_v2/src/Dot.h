@@ -13,7 +13,7 @@ class Dot{
     void update();
     void checkWalls(bool proxy, Dot dot);
     void melt(float xAccel, float lowerY, float upperY);
-    void reset();
+    void reset(Dot currPos, Dot targetPos, float mixVal);
 
     // attributes
     glm::vec3 pos;

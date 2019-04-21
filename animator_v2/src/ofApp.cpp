@@ -15,10 +15,10 @@
 void ofApp::setup()
 {
     // constants to set at the beginning
-    batchName = "saturday_test_02";
+    batchName = "saturday_test_03";
     outputWidth = 1024;
     outputHeight = 512;
-    ofSetFrameRate(30);
+    ofSetFrameRate(60);
     
     drawScale = 2.21874;
     drawX = 116;
@@ -28,7 +28,7 @@ void ofApp::setup()
     dataSet = "amalg_02";
     dotFrameIndex = 0;
     ofBackground(0);
-    numBodies = 4;
+    numBodies = 1;
     numDots = 0;
     
     
@@ -132,28 +132,9 @@ void ofApp::setup()
         allDotFramesReference.push_back(dots);
     }
     
-    // Set up our proxyFrame
-//    for(int i = 0; i < 14; i++)
-//    {
-//        Dot proxy;
-//        proxy.pos = {0, 0, 0};
-//        proxyFrame.push_back(proxy);
-//    }
-    
-    // make all the changes to the dot frames in proxy. Use Reference to refer back to original dot frame positions.
+
     allDotFramesProxy = allDotFramesReference;
     
-//    for(int q = 0; q < numBodies; q++)
-//    {
-//        std::vector<Dot> tempProxyFrame;
-//        for(int i = 0; i < 14; i++)
-//        {
-//            Dot proxy;
-//            proxy.pos = {0, 0, 0};
-//            tempProxyFrame.push_back(proxy);
-//        }
-//        proxyFrameUgh.push_back(tempProxyFrame);
-//    }
     
     // okay, so now we have a vector or vectors that contain 14 Dots, which each have a position, velocity, acceleration, etc...
 }
@@ -179,11 +160,6 @@ void ofApp::update()
             }
             proxyFrameUgh.push_back(tempProxyFrame);
         }
-//        for(auto& d : proxyFrame)
-//        {
-//            d.melt(0.07, 0.06, 0.09);
-//        }
-        
         shouldMelt = !shouldMelt;
     }
 
@@ -192,43 +168,46 @@ void ofApp::update()
         cycle();
     }
     
-    if(shouldReset)
-    {
-        for(auto& d : proxyFrame)
-        {
-            d.reset();
-        }
-        shouldReset = !shouldReset;
-    }
+
+    
+    
+    
+    // if there are proxy frames, add that info to the dot-frame info.
     if(proxyFrameUgh.size() > 0)
     {
-    for(int q = 0; q < allDotFramesProxy.size(); q+=allDotFramesProxy.size()/numBodies)
-    {
-        int ughIndex = ofMap(q, 0, allDotFramesProxy.size(), 0, numBodies);
-        for(int i = 0; i < allDotFramesProxy[dotFrameIndex].size()-numDots; i++)
+        for(int q = 0; q < allDotFramesProxy.size(); q+=allDotFramesProxy.size()/numBodies)
         {
-            allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos = allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos + proxyFrameUgh[ughIndex][i].pos;
-            proxyFrameUgh[ughIndex][i].checkWalls(true, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i]);
-            //proxyFrame[i].update();
+            int ughIndex = ofMap(q, 0, allDotFramesProxy.size(), 0, numBodies);
+            for(int i = 0; i < allDotFramesProxy[dotFrameIndex].size()-numDots; i++)
+            {
+                allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos = allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos + proxyFrameUgh[ughIndex][i].pos;
+                proxyFrameUgh[ughIndex][i].checkWalls(true, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i]);
+                
+                if(shouldReset && ofGetFrameNum() - currFrame < 90)
+                {
+                // lerps between current and original dot frame positions
+                allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos = glm::mix(allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, ofMap(ofGetFrameNum() - currFrame, 0, 90, 0., 1.));
+                    std::cout << ofMap(ofGetFrameNum() - currFrame, 0, 89, 0., 1.) << std::endl;
+                    std::cout << ofGetFrameNum() - currFrame << std::endl;
+                } if(ofGetFrameNum() - currFrame == 89) {
+                    shouldCycle = true;
+                    shouldReset = false;
+                    proxyFrameUgh.clear();
+                }
+            }
         }
-    }
     
     
         for(int q = 0; q < allDotFramesProxy.size(); q+=allDotFramesProxy.size()/numBodies)
         {
-            
             int ughIndex = ofMap(q, 0, allDotFramesProxy.size(), 0, numBodies);
-            std::cout << ughIndex << std::endl;
+            //std::cout << ughIndex << std::endl;
             for(int i = 0; i < 14; i++)
             {
                 proxyFrameUgh[ughIndex][i].update();
             }
         }
     }
-//    for(auto& d : proxyFrame)
-//    {
-//        d.update();
-//    }
         
         
     
@@ -329,7 +308,8 @@ void ofApp::keyPressed(int key)
             break;
             
         case ' ':
-            proxyFrameUgh.clear();
+            //proxyFrameUgh.clear();
+            currFrame = ofGetFrameNum();
             shouldReset = !shouldReset;
             break;
             
