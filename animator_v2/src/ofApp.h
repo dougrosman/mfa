@@ -12,9 +12,10 @@ class ofApp : public ofBaseApp{
 
 		void keyPressed(int key);
     
-    void drawDotFrame(std::vector<Dot> dotFrame);
+    void drawDotFrame(std::vector<Dot> dotFrame, int nDots);
     //void drawDotFrame(std::vector<Dot> dotFrame, std::vector<Dot> proxyFrame, bool addProxy);
     void cycle();
+    void score();
     
     // used to store and prune incoming dot data
     struct dotFrame {
@@ -47,8 +48,13 @@ class ofApp : public ofBaseApp{
     std::vector<std::vector<Dot>> allDotFramesReference;
     std::vector<std::vector<Dot>> allDotFramesProxy;
     
+    std::vector<int> numDotsInFrame;
+    std::vector<glm::vec3> translateVals;
+    
     std::vector<Dot> proxyFrame;
     std::vector<std::vector<Dot>> proxyFrameUgh;
+    
+    std::vector<int> dotIndexMods;
     
     // for saving images
     ofFbo fbo;
@@ -60,8 +66,20 @@ class ofApp : public ofBaseApp{
     // void cycle
     float dotFrameIndex;
     
-    bool shouldCycle;
+    // void melt
+    float meltX;
+    float meltY1;
+    float meltY2;
+    
+    float explodeX;
+    float explodeY;
+    
+    float stopCycleTime;
+    float tempFc;
+    
+    bool shouldCycle = false;
     bool shouldMelt = false;
+    bool shouldExplode = false;
     bool shouldReset = false;
     bool shouldClear = false;
     float currFrame;

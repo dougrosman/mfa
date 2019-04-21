@@ -13,7 +13,8 @@ class Dot{
     void update();
     void checkWalls(bool proxy, Dot dot);
     void melt(float xAccel, float lowerY, float upperY);
-    void reset(Dot currPos, Dot targetPos, float mixVal);
+    void explode(float xVel, float yVel);
+    void reset();
 
     // attributes
     glm::vec3 pos;
@@ -24,4 +25,5 @@ class Dot{
     float size;
     float age;
     ofColor color;
+    
 };

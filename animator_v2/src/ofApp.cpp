@@ -10,6 +10,11 @@
 // when new bodies are drawn on screen, give them a random x translation so they don't all bunch up in the center
 // create score where timing can control everything
 
+///// TO DO II /////
+// fix txt file
+// fix q intervals to be constant
+// write out final score (1-2-3-2-1)
+
 ////////// SETUP ///////////////////// SETUP //////////
 
 void ofApp::setup()
@@ -18,7 +23,7 @@ void ofApp::setup()
     batchName = "saturday_test_03";
     outputWidth = 1024;
     outputHeight = 512;
-    ofSetFrameRate(60);
+    ofSetFrameRate(30);
     
     drawScale = 2.21874;
     drawX = 116;
@@ -30,7 +35,14 @@ void ofApp::setup()
     ofBackground(0);
     numBodies = 1;
     numDots = 0;
-    resetTime = 80;
+    resetTime = 120;
+    
+    numDotsInFrame.push_back(0);
+    translateVals.push_back({0, 0, 0});
+    
+    dotIndexMods.push_back(0);
+    dotIndexMods.push_back(8000);
+    dotIndexMods.push_back(16000);
     
     
     // allocate fbo and savePixels for saving frames later
@@ -144,6 +156,7 @@ void ofApp::setup()
 
 void ofApp::update()
 {
+    score();
     //melt test
     if(shouldMelt)
     {
@@ -156,48 +169,64 @@ void ofApp::update()
                 proxy.pos = {0, 0, 0};
                 proxy.vel = {0, 0, 0};
                 proxy.accel = {0, 0, 0};
-                proxy.melt(0.07, 0.06, 0.09);
+                proxy.melt(meltX, meltY1, meltY2);
                 tempProxyFrame.push_back(proxy);
             }
             proxyFrameUgh.push_back(tempProxyFrame);
         }
         shouldMelt = !shouldMelt;
     }
+    
+    if(shouldExplode)
+    {
+        for(int q = 0; q < numBodies; q++)
+        {
+            std::vector<Dot> tempProxyFrame;
+            for(int i = 0; i < 14; i++)
+            {
+                Dot proxy;
+                proxy.pos = {0, 0, 0};
+                proxy.vel = {0, 0, 0};
+                proxy.accel = {0, 0, 0};
+                proxy.explode(explodeX, explodeY);
+                tempProxyFrame.push_back(proxy);
+            }
+            proxyFrameUgh.push_back(tempProxyFrame);
+        }
+        shouldExplode = !shouldExplode;
+    }
 
     if(shouldCycle)
     {
         cycle();
     }
-    
 
-    
-    
-    
     // if there are proxy frames, add that info to the dot-frame info.
     if(proxyFrameUgh.size() > 0)
     {
-        for(int q = 0; q < allDotFramesProxy.size(); q+=allDotFramesProxy.size()/numBodies)
+        for(int q = 0; q < allDotFramesProxy.size(); q+=(allDotFramesProxy.size()/numBodies))
         {
             int ughIndex = ofMap(q, 0, allDotFramesProxy.size(), 0, numBodies);
             for(int i = 0; i < allDotFramesProxy[dotFrameIndex].size()-numDots; i++)
             {
-                allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos = allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos + proxyFrameUgh[ughIndex][i].pos;
                 proxyFrameUgh[ughIndex][i].checkWalls(true, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i]);
+                allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos = allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos + proxyFrameUgh[ughIndex][i].pos;
+                
                 
                 if(shouldReset && ofGetFrameNum() - currFrame < resetTime)
                 {
+                    
                 // lerps between current and original dot frame positions
-                allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos = glm::mix(allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, ofMap(ofGetFrameNum() - currFrame, 0, resetTime, 0., 1.));
+                    allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos = glm::mix(allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, ofMap(ofGetFrameNum() - currFrame, 0, resetTime, 0., 1.));
+                
                     
                     if(ofGetFrameNum() - currFrame == resetTime-1) {
                         shouldCycle = true;
                         shouldClear = true;
                     }
                 }
-                //std::cout << ofMap(ofGetFrameNum() - currFrame, 0, resetTime-1, 0., 1.) << std::endl;
-                //std::cout << ofGetFrameNum() - currFrame << std::endl;
                 
-                std::cout << glm::mix(allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, ofMap(ofGetFrameNum() - currFrame, 0, resetTime, 0., 1.)) << std::endl;
+                //std::cout << glm::mix(allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, ofMap(ofGetFrameNum() - currFrame, 0, resetTime, 0., 1.)) << std::endl;
                 
                 if(shouldClear)
                 {
@@ -206,12 +235,12 @@ void ofApp::update()
                     shouldReset = false;
                 }
             }
-            std::cout<<""<<std::endl;
+            //std::cout<<""<<std::endl;
         }
     
         if(proxyFrameUgh.size() > 0)
         {
-            for(int q = 0; q < allDotFramesProxy.size(); q+=allDotFramesProxy.size()/numBodies)
+            for(int q = 0; q < allDotFramesProxy.size(); q+=(allDotFramesProxy.size()/numBodies))
             {
                 int ughIndex = ofMap(q, 0, allDotFramesProxy.size(), 0, numBodies);
                 //std::cout << ughIndex << std::endl;
@@ -222,10 +251,6 @@ void ofApp::update()
             }
         }
     }
-        
-        
-    
-    
     
     //numBodies = ofMap(ofGetMouseX(), 0, ofGetWidth(), 1, 4);
     //numDots = ofMap(ofGetMouseY(), 0, ofGetHeight(), 2, 10);
@@ -237,9 +262,11 @@ void ofApp::draw()
     fbo.begin();
         ofClear(0);
     
-        for(int q = 0; q < allDotFramesProxy.size(); q+=allDotFramesProxy.size()/numBodies)
+        for(int q = 0; q < allDotFramesProxy.size(); q+=(allDotFramesProxy.size()/numBodies))
         {
-            drawDotFrame(allDotFramesProxy[ofWrap(dotFrameIndex+q, 0, allDotFramesProxy.size())]);
+            ofPushMatrix();
+            ofTranslate(translateVals[q*numBodies/allDotFramesProxy.size()]);
+            drawDotFrame(allDotFramesProxy[ofWrap(dotFrameIndex+q, 0, allDotFramesProxy.size())], numDotsInFrame[q*numBodies/allDotFramesProxy.size()]);
         }
     
         fbo.end();
@@ -276,20 +303,23 @@ void ofApp::draw()
         std::cout << saveName << std::endl;
     }
     
+    ofDrawBitmapString(ofToString(ofGetFrameNum()), 10, 20);
+    
 }
 
 ////////// FUNCTIONS ///////////////////// FUNCTIONS //////////
 
 
 // draws the dot frame
-void ofApp::drawDotFrame(std::vector<Dot> dotFrame)
+void ofApp::drawDotFrame(std::vector<Dot> dotFrame, int nDots)
 {
     
-    for(int i = 0; i < 14-numDots; i++)
+    for(int i = 0; i < nDots; i++)
     {
         ofSetColor(dotFrame[i].color);
         ofDrawCircle(dotFrame[i].pos, dotFrame[i].size);
     }
+    std::cout<<""<<std::endl;
     
     
 }
@@ -327,17 +357,131 @@ void ofApp::keyPressed(int key)
             shouldReset = !shouldReset;
             break;
             
-        case '-': if(numDots < 14) { numDots++; }
+        case '=': if(numDotsInFrame[0] < 14) { numDotsInFrame[0]++; }//numDots++; }
             break;
             
-        case '=': if (numDots > 0) { numDots--; }
+        case '-': if (numDotsInFrame[0] > 0) { numDotsInFrame[0]--; }//numDots--; }
             break;
             
-        case '9': if(numBodies > 1 && proxyFrameUgh.size() == 0) { numBodies--; }
+        case '9': if(numBodies > 1 && proxyFrameUgh.size() == 0)
+                {
+                    //numDotsInFrame.erase(numDotsInFrame.end());
+                    //translateVals.erase(translateVals.end());
+                    numBodies--;
+                }
             break;
             
-        case '0': if (numBodies < 50 && proxyFrameUgh.size() == 0) { numBodies++; }
+        case '0': if (numBodies < 50 && proxyFrameUgh.size() == 0)
+                {
+                    numBodies++;
+                    numDotsInFrame.push_back(0);
+                    translateVals.push_back({ofRandom(-150, 150), 0, 0});
+                }
             break;
             
     }
+}
+
+////////// SCORE ///////////////////// SCORE //////////
+
+void ofApp::score()
+{
+    //shouldCycle = true;
+    float fc = ofGetFrameNum();
+    
+    if(fc == 0)
+    {
+        shouldCycle = true;
+    }
+    
+    // start black screen
+    
+    // fade in first body after 2 seconds, one dot per second, then start cycling
+    if(fc > 60 && (int)fc % 60 == 0 && numDotsInFrame[0] < 14)
+    {
+        numDotsInFrame[0]++;
+    }
+    
+    // start cycling once faded in
+//    if(numDotsInFrame[0] == 14)
+//    {
+//        shouldCycle = true;
+//    }
+    
+    // after one minute, start fading in second body
+    if(fc == 600)
+    {
+        numBodies++;
+        numDotsInFrame.push_back(0);
+        translateVals.push_back({ofRandom(-150, 150), 0, 0});
+    }
+    
+    // Fade in second body, one dot every 2 seconds
+    if(fc > 600 && (int)fc % 60 == 0 && numDotsInFrame[1] < 14)
+    {
+        numDotsInFrame[1]++;
+    }
+    
+    // start fading in third body
+    if(fc == 900)
+    {
+        numBodies++;
+        numDotsInFrame.push_back(0);
+        translateVals.push_back({ofRandom(-150, 150), 0, 0});
+    }
+    
+    // Fade in second body, one dot every 2 seconds
+    if(fc > 900 && (int)fc % 60 == 0 && numDotsInFrame[2] < 14)
+    {
+        numDotsInFrame[2]++;
+    }
+    
+    // melt bods
+    if(fc == 1000)
+    {
+        stopCycleTime = 60;
+        tempFc = fc;
+        meltX = .09;
+        meltY1 = .1;
+        meltY2 = .14;
+        shouldMelt = true;
+    }
+    
+    // stop cycling during melt
+    if(fc > 1000 && fc - tempFc == stopCycleTime)
+    {
+        shouldCycle = false;
+    }
+    
+    if(fc == 1200)
+    {
+        resetTime = 120;
+        currFrame = ofGetFrameNum();
+        shouldReset = !shouldReset;
+    }
+    
+    // explode bods
+    if(fc == 1400)
+    {
+        stopCycleTime = 1;
+        tempFc = fc;
+        explodeX = 20;
+        explodeY = 20;
+        shouldExplode = true;
+    }
+    
+    // stop cycling during melt
+    if(fc > 1400 && fc - tempFc == stopCycleTime)
+    {
+        shouldCycle = false;
+    }
+    
+    if(fc == 1600)
+    {
+        resetTime = 120;
+        currFrame = ofGetFrameNum();
+        shouldReset = !shouldReset;
+    }
+    
+    
 }

@@ -84,11 +84,17 @@ void Dot::melt(float xAccel, float lowerY, float upperY)
     accel = {ofRandom(-xAccel, xAccel), ofRandom(lowerY, upperY), 0};
 }
 
-void Dot::reset(Dot currPos, Dot targetPos, float mixVal)
+void Dot::explode(float xVel, float yVel)
+{
+    accel = {0, .1, 0};
+    vel = {ofRandom(-xVel, xVel), ofRandom(-yVel, yVel), 0};
+}
+
+void Dot::reset()
 {
     accel = {0, 0, 0};
     vel = {0, 0, 0};
-    pos = glm::mix(currPos.pos, targetPos.pos, mixVal);    
+    pos = {0, 0, 0};
 }
 
 
