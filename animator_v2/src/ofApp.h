@@ -84,6 +84,9 @@ class ofApp : public ofBaseApp{
     bool shouldClear = false;
     float currFrame;
     
+    bool shouldFade2 = true;
+    bool shouldFade3 = true;
+    
     int tempDotsInFrameIndex = 9;
     
     //record

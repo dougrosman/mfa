@@ -20,7 +20,7 @@
 void ofApp::setup()
 {
     // constants to set at the beginning
-    batchName = "saturday_test_03";
+    batchName = "saturday_test_04";
     outputWidth = 1024;
     outputHeight = 512;
     ofSetFrameRate(60);
@@ -30,7 +30,7 @@ void ofApp::setup()
     drawY = -94;
     dotSize = 9 * (drawScale * outputWidth/2048);
     ofSetCircleResolution(80);
-    dataSet = "amalg_03";
+    dataSet = "amalg_04";
     dotFrameIndex = 0;
     ofBackground(0);
     numBodies = 10;
@@ -38,16 +38,16 @@ void ofApp::setup()
     resetTime = 120;
     
     translateVals.push_back({0, 0, 0});
-    translateVals.push_back({-200, 0, 0});
-    translateVals.push_back({200, 0, 0});
+    translateVals.push_back({-100, 0, 0});
+    translateVals.push_back({100, 0, 0});
     
     translateVals.push_back({0, 0, 0});
-    translateVals.push_back({-500, 0, 0});
-    translateVals.push_back({300, 0, 0});
     translateVals.push_back({-300, 0, 0});
+    translateVals.push_back({300, 0, 0});
+    translateVals.push_back({200, 0, 0});
     translateVals.push_back({100, 0, 0});
-    translateVals.push_back({500, 0, 0});
-    translateVals.push_back({-100, 0, 0});
+    translateVals.push_back({-200, 0, 0});
+    translateVals.push_back({300, 0, 0});
     
     dotIndexMods.push_back(0);
     dotIndexMods.push_back(9200);
@@ -136,8 +136,8 @@ void ofApp::setup()
                 
                 xMin = 50.;
                 xMax = 685.;
-                yMin = 70.;
-                yMax = 590.;
+                yMin = 75.;
+                yMax = 570.;
                 
                 // if we parsed 14 dots of data, push back the frames that
                 // are within our desired size
@@ -235,7 +235,11 @@ void ofApp::update()
             int ughIndex = q;
             for(int i = 0; i < allDotFramesProxy[dotFrameIndex].size()-numDots; i++)
             {
-                proxyFrameUgh[ughIndex][i].checkWalls(true, allDotFramesReference[ofWrap(dotFrameIndex + dotIndexMods[q], 0, allDotFramesProxy.size())][i]);
+                if(!shouldCycle)
+                {
+                    proxyFrameUgh[ughIndex][i].checkWalls(true, allDotFramesReference[ofWrap(dotFrameIndex + dotIndexMods[q], 0, allDotFramesProxy.size())][i]);
+                }
+                
                 allDotFramesProxy[ofWrap(dotFrameIndex + dotIndexMods[q], 0, allDotFramesProxy.size())][i].pos = allDotFramesReference[ofWrap(dotFrameIndex + dotIndexMods[q], 0, allDotFramesProxy.size())][i].pos + proxyFrameUgh[ughIndex][i].pos;
                 
                 
@@ -460,7 +464,7 @@ void ofApp::score()
     /// PHASE 2 /// PHASE 2 /// PHASE 2 /// PHASE 2 /// PHASE 2
     
     // 5. fade in second bod
-    if(fc > 4179 && (int)fc % 30 == 0 && numDotsInFrame[1] < 14)
+    if(fc > 4179 && (int)fc % 30 == 0 && numDotsInFrame[1] < 14 && shouldFade2)
     {
         numDotsInFrame[1]++;
     }
@@ -471,6 +475,7 @@ void ofApp::score()
     
     if(fc == 7780)
     {
+        shouldFade2 = false;
         stopCycleTime = 30;
         tempFc = fc;
         meltX = .09;
@@ -498,7 +503,7 @@ void ofApp::score()
     /// PHASE 3 /// PHASE 3 /// PHASE 3 /// PHASE 3 /// PHASE 3
     
     // 9. fade in third bod
-    if(fc > 8179 && (int)fc % 15 == 0 && numDotsInFrame[2] < 14)
+    if(fc > 8179 && (int)fc % 15 == 0 && numDotsInFrame[2] < 14 && shouldFade3)
     {
         numDotsInFrame[2]++;
     }
@@ -507,27 +512,28 @@ void ofApp::score()
     
     // 10. add in remaining 7 bods
     
-    if(fc == 11800) { numDotsInFrame[3] = 14; }
-    if(fc == 12300) { numDotsInFrame[4] = 14; }
-    if(fc == 12700) { numDotsInFrame[5] = 14; }
-    if(fc == 13000) { numDotsInFrame[6] = 14; }
-    if(fc == 13200) { numDotsInFrame[7] = 14; }
-    if(fc == 13300) { numDotsInFrame[8] = 14; }
-    if(fc == 13350) { numDotsInFrame[9] = 14; }
+    if(fc == 10800) { numDotsInFrame[3] = 14; }
+    if(fc == 11300) { numDotsInFrame[4] = 14; }
+    if(fc == 11700) { numDotsInFrame[5] = 14; }
+    if(fc == 12000) { numDotsInFrame[6] = 14; }
+    if(fc == 12200) { numDotsInFrame[7] = 14; }
+    if(fc == 12300) { numDotsInFrame[8] = 14; }
+    if(fc == 12350) { numDotsInFrame[9] = 14; }
     
     // 11 EXPLODE
     
-    if(fc == 13800)
+    if(fc == 12800)
     {
+        shouldFade3 = false;
         stopCycleTime = 1;
         tempFc = fc;
-        explodeX = 30;
-        explodeY = 30;
+        explodeX = 22;
+        explodeY = 22;
         shouldExplode = true;
     }
     
      // 12 stop cycling during EXPLODE
-    if(fc > 13800 && fc - tempFc == stopCycleTime)
+    if(fc > 12800 && fc - tempFc == stopCycleTime)
     {
         shouldCycle = false;
     }
@@ -535,7 +541,7 @@ void ofApp::score()
     /// EPILOGUE /// EPILOGUE /// EPILOGUE /// EPILOGUE /// EPILOGUE
     
     // 13 reset all bods
-    if(fc == 14500)
+    if(fc == 13500)
     {
         resetTime = 1260;
         currFrame = ofGetFrameNum();
@@ -543,18 +549,13 @@ void ofApp::score()
     }
     
     // 14 fade away bods dot by dot
-    if(fc > 14299)
+    if(fc > 13499)
     {
-        if((int) fc % (int)(60/tempDotsInFrameIndex) == 0)
+        if((int)fc % (int)(60/(tempDotsInFrameIndex+1)) == 0)
         {
             if(tempDotsInFrameIndex > 0)
             {
                 numDotsInFrame[tempDotsInFrameIndex]--;
-                
-                if(numDotsInFrame[tempDotsInFrameIndex] == 0)
-                {
-                    tempDotsInFrameIndex--;
-                }
             }
             else
             {
@@ -563,87 +564,11 @@ void ofApp::score()
                     numDotsInFrame[tempDotsInFrameIndex]--;
                 }
             }
+                
+            if(numDotsInFrame[tempDotsInFrameIndex] == 0)
+            {
+                tempDotsInFrameIndex--;
+            }
         }
-        
     }
-    
-    
-    
-    
-    
-    
-//    // after one minute, start fading in second body
-//    if(fc == 600)
-//    {
-//
-//    }
-//
-//    // Fade in second body, one dot every 2 seconds
-//    if(fc > 600 && (int)fc % 60 == 0 && numDotsInFrame[1] < 14)
-//    {
-//        numDotsInFrame[1]++;
-//    }
-//
-//    // start fading in third body
-//    if(fc == 900)
-//    {
-//        numBodies++;
-//        numDotsInFrame.push_back(0);
-//        translateVals.push_back({300, 0, 0});
-//    }
-//
-//    // Fade in second body, one dot every 2 seconds
-//    if(fc > 900 && (int)fc % 60 == 0 && numDotsInFrame[2] < 14)
-//    {
-//        numDotsInFrame[2]++;
-//    }
-//
-//    // melt bods
-//    if(fc == 1000)
-//    {
-//        stopCycleTime = 60;
-//        tempFc = fc;
-//        meltX = .09;
-//        meltY1 = .1;
-//        meltY2 = .14;
-//        shouldMelt = true;
-//    }
-//
-//    // stop cycling during melt
-//    if(fc > 1000 && fc - tempFc == stopCycleTime)
-//    {
-//        shouldCycle = false;
-//    }
-//
-//    if(fc == 1200)
-//    {
-//        resetTime = 120;
-//        currFrame = ofGetFrameNum();
-//        shouldReset = !shouldReset;
-//    }
-//
-//    // explode bods
-//    if(fc == 1400)
-//    {
-//        stopCycleTime = 1;
-//        tempFc = fc;
-//        explodeX = 30;
-//        explodeY = 30;
-//        shouldExplode = true;
-//    }
-//
-//    // stop cycling during melt
-//    if(fc > 1400 && fc - tempFc == stopCycleTime)
-//    {
-//        shouldCycle = false;
-//    }
-//
-//    if(fc == 1600)
-//    {
-//        resetTime = 120;
-//        currFrame = ofGetFrameNum();
-//        shouldReset = !shouldReset;
-//    }
-    
-    
 }
