@@ -20,7 +20,7 @@
 void ofApp::setup()
 {
     // constants to set at the beginning
-    batchName = "saturday_test_04";
+    batchName = "MFA_01-30p";
     outputWidth = 1024;
     outputHeight = 512;
     ofSetFrameRate(60);
