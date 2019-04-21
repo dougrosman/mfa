@@ -30,6 +30,7 @@ void ofApp::setup()
     ofBackground(0);
     numBodies = 1;
     numDots = 0;
+    resetTime = 80;
     
     
     // allocate fbo and savePixels for saving frames later
@@ -183,28 +184,41 @@ void ofApp::update()
                 allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos = allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos + proxyFrameUgh[ughIndex][i].pos;
                 proxyFrameUgh[ughIndex][i].checkWalls(true, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i]);
                 
-                if(shouldReset && ofGetFrameNum() - currFrame < 90)
+                if(shouldReset && ofGetFrameNum() - currFrame < resetTime)
                 {
                 // lerps between current and original dot frame positions
-                allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos = glm::mix(allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, ofMap(ofGetFrameNum() - currFrame, 0, 90, 0., 1.));
-                    std::cout << ofMap(ofGetFrameNum() - currFrame, 0, 89, 0., 1.) << std::endl;
-                    std::cout << ofGetFrameNum() - currFrame << std::endl;
-                } if(ofGetFrameNum() - currFrame == 89) {
-                    shouldCycle = true;
-                    shouldReset = false;
+                allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos = glm::mix(allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, ofMap(ofGetFrameNum() - currFrame, 0, resetTime, 0., 1.));
+                    
+                    if(ofGetFrameNum() - currFrame == resetTime-1) {
+                        shouldCycle = true;
+                        shouldClear = true;
+                    }
+                }
+                //std::cout << ofMap(ofGetFrameNum() - currFrame, 0, resetTime-1, 0., 1.) << std::endl;
+                //std::cout << ofGetFrameNum() - currFrame << std::endl;
+                
+                std::cout << glm::mix(allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, ofMap(ofGetFrameNum() - currFrame, 0, resetTime, 0., 1.)) << std::endl;
+                
+                if(shouldClear)
+                {
                     proxyFrameUgh.clear();
+                    shouldClear = false;
+                    shouldReset = false;
                 }
             }
+            std::cout<<""<<std::endl;
         }
     
-    
-        for(int q = 0; q < allDotFramesProxy.size(); q+=allDotFramesProxy.size()/numBodies)
+        if(proxyFrameUgh.size() > 0)
         {
-            int ughIndex = ofMap(q, 0, allDotFramesProxy.size(), 0, numBodies);
-            //std::cout << ughIndex << std::endl;
-            for(int i = 0; i < 14; i++)
+            for(int q = 0; q < allDotFramesProxy.size(); q+=allDotFramesProxy.size()/numBodies)
             {
-                proxyFrameUgh[ughIndex][i].update();
+                int ughIndex = ofMap(q, 0, allDotFramesProxy.size(), 0, numBodies);
+                //std::cout << ughIndex << std::endl;
+                for(int i = 0; i < 14; i++)
+                {
+                    proxyFrameUgh[ughIndex][i].update();
+                }
             }
         }
     }
@@ -319,10 +333,10 @@ void ofApp::keyPressed(int key)
         case '=': if (numDots > 0) { numDots--; }
             break;
             
-        case '9': if(numBodies > 0) { numBodies--; }
+        case '9': if(numBodies > 1 && proxyFrameUgh.size() == 0) { numBodies--; }
             break;
             
-        case '0': if (numBodies > 0) { numBodies++; }
+        case '0': if (numBodies < 50 && proxyFrameUgh.size() == 0) { numBodies++; }
             break;
             
     }

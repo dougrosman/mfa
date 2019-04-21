@@ -35,6 +35,7 @@ class ofApp : public ofBaseApp{
     float yMin;
     float yMax;
     float dotSize;
+    float resetTime;
     
     float outputWidth;
     float outputHeight;
@@ -62,6 +63,7 @@ class ofApp : public ofBaseApp{
     bool shouldCycle;
     bool shouldMelt = false;
     bool shouldReset = false;
+    bool shouldClear = false;
     float currFrame;
     
     //record
