@@ -86,7 +86,7 @@ void Dot::melt(float xAccel, float lowerY, float upperY)
 
 void Dot::explode(float xVel, float yVel)
 {
-    accel = {0, .1, 0};
+    accel = {0, .5, 0};
     vel = {ofRandom(-xVel, xVel), ofRandom(-yVel, yVel), 0};
 }
 

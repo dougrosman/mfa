@@ -23,26 +23,48 @@ void ofApp::setup()
     batchName = "saturday_test_03";
     outputWidth = 1024;
     outputHeight = 512;
-    ofSetFrameRate(30);
+    ofSetFrameRate(60);
     
     drawScale = 2.21874;
     drawX = 116;
     drawY = -94;
     dotSize = 9 * (drawScale * outputWidth/2048);
     ofSetCircleResolution(80);
-    dataSet = "amalg_02";
+    dataSet = "amalg_03";
     dotFrameIndex = 0;
     ofBackground(0);
-    numBodies = 1;
+    numBodies = 10;
     numDots = 0;
     resetTime = 120;
     
-    numDotsInFrame.push_back(0);
     translateVals.push_back({0, 0, 0});
+    translateVals.push_back({-200, 0, 0});
+    translateVals.push_back({200, 0, 0});
+    
+    translateVals.push_back({0, 0, 0});
+    translateVals.push_back({-500, 0, 0});
+    translateVals.push_back({300, 0, 0});
+    translateVals.push_back({-300, 0, 0});
+    translateVals.push_back({100, 0, 0});
+    translateVals.push_back({500, 0, 0});
+    translateVals.push_back({-100, 0, 0});
     
     dotIndexMods.push_back(0);
+    dotIndexMods.push_back(9200);
+    dotIndexMods.push_back(18400);
+    
+    dotIndexMods.push_back(5000);
     dotIndexMods.push_back(8000);
-    dotIndexMods.push_back(16000);
+    dotIndexMods.push_back(11000);
+    dotIndexMods.push_back(14000);
+    dotIndexMods.push_back(17000);
+    dotIndexMods.push_back(20000);
+    dotIndexMods.push_back(23000);
+    
+    for(int i = 0; i < 10; i++)
+    {
+        numDotsInFrame.push_back(0);
+    }
     
     
     // allocate fbo and savePixels for saving frames later
@@ -114,12 +136,12 @@ void ofApp::setup()
                 
                 xMin = 50.;
                 xMax = 685.;
-                yMin = 80.;
+                yMin = 70.;
                 yMax = 590.;
                 
                 // if we parsed 14 dots of data, push back the frames that
                 // are within our desired size
-                if (df.fourteenDots.size() == 14 && (df.y2 - df.y1) < 380 && df.x1 > xMin && df.x2 < xMax && df.y1 > yMin && df.y2 < yMax)
+                if (df.fourteenDots.size() == 14 && (df.y2 - df.y1) < 390 && df.x1 > xMin && df.x2 < xMax && df.y1 > yMin && df.y2 < yMax)
                 {
                     originalDotFrames.push_back(df);
                 }
@@ -147,6 +169,7 @@ void ofApp::setup()
     
 
     allDotFramesProxy = allDotFramesReference;
+    std::cout<< allDotFramesReference.size() << std::endl;
     
     
     // okay, so now we have a vector or vectors that contain 14 Dots, which each have a position, velocity, acceleration, etc...
@@ -156,6 +179,7 @@ void ofApp::setup()
 
 void ofApp::update()
 {
+    std::cout << ofGetFrameNum() << std::endl;
     score();
     //melt test
     if(shouldMelt)
@@ -204,20 +228,22 @@ void ofApp::update()
     // if there are proxy frames, add that info to the dot-frame info.
     if(proxyFrameUgh.size() > 0)
     {
-        for(int q = 0; q < allDotFramesProxy.size(); q+=(allDotFramesProxy.size()/numBodies))
+        // for(int q = 0; q < allDotFramesProxy.size(); q+=(allDotFramesProxy.size()/numBodies))
+        for(int q = 0; q < numBodies; q++)
         {
-            int ughIndex = ofMap(q, 0, allDotFramesProxy.size(), 0, numBodies);
+            //int ughIndex = ofMap(q, 0, allDotFramesProxy.size(), 0, numBodies);
+            int ughIndex = q;
             for(int i = 0; i < allDotFramesProxy[dotFrameIndex].size()-numDots; i++)
             {
                 proxyFrameUgh[ughIndex][i].checkWalls(true, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i]);
-                allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos = allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos + proxyFrameUgh[ughIndex][i].pos;
+                allDotFramesProxy[ofWrap(dotFrameIndex + dotIndexMods[q], 0, allDotFramesProxy.size())][i].pos = allDotFramesReference[ofWrap(dotFrameIndex + dotIndexMods[q], 0, allDotFramesProxy.size())][i].pos + proxyFrameUgh[ughIndex][i].pos;
                 
                 
                 if(shouldReset && ofGetFrameNum() - currFrame < resetTime)
                 {
                     
                 // lerps between current and original dot frame positions
-                    allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos = glm::mix(allDotFramesProxy[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, allDotFramesReference[ofWrap(dotFrameIndex + q, 0, allDotFramesProxy.size())][i].pos, ofMap(ofGetFrameNum() - currFrame, 0, resetTime, 0., 1.));
+                    allDotFramesProxy[ofWrap(dotFrameIndex + dotIndexMods[q], 0, allDotFramesProxy.size())][i].pos = glm::mix(allDotFramesProxy[ofWrap(dotFrameIndex + dotIndexMods[q], 0, allDotFramesProxy.size())][i].pos, allDotFramesReference[ofWrap(dotFrameIndex + dotIndexMods[q], 0, allDotFramesProxy.size())][i].pos, ofMap(ofGetFrameNum() - currFrame, 0, resetTime, 0., 1.));
                 
                     
                     if(ofGetFrameNum() - currFrame == resetTime-1) {
@@ -235,15 +261,15 @@ void ofApp::update()
                     shouldReset = false;
                 }
             }
-            //std::cout<<""<<std::endl;
         }
     
         if(proxyFrameUgh.size() > 0)
         {
-            for(int q = 0; q < allDotFramesProxy.size(); q+=(allDotFramesProxy.size()/numBodies))
+            // for(int q = 0; q < allDotFramesProxy.size(); q+=(allDotFramesProxy.size()/numBodies))
+            for(int q = 0; q < numBodies; q++)
             {
-                int ughIndex = ofMap(q, 0, allDotFramesProxy.size(), 0, numBodies);
-                //std::cout << ughIndex << std::endl;
+                //int ughIndex = ofMap(q, 0, allDotFramesProxy.size(), 0, numBodies);
+                int ughIndex = q;
                 for(int i = 0; i < 14; i++)
                 {
                     proxyFrameUgh[ughIndex][i].update();
@@ -262,11 +288,12 @@ void ofApp::draw()
     fbo.begin();
         ofClear(0);
     
-        for(int q = 0; q < allDotFramesProxy.size(); q+=(allDotFramesProxy.size()/numBodies))
+        //for(int q = 0; q < allDotFramesProxy.size(); q+=(allDotFramesProxy.size()/numBodies))
+        for(int q = 0; q < numBodies; q++)
         {
             ofPushMatrix();
-            ofTranslate(translateVals[q*numBodies/allDotFramesProxy.size()]);
-            drawDotFrame(allDotFramesProxy[ofWrap(dotFrameIndex+q, 0, allDotFramesProxy.size())], numDotsInFrame[q*numBodies/allDotFramesProxy.size()]);
+            ofTranslate(translateVals[q]);
+            drawDotFrame(allDotFramesProxy[ofWrap(dotFrameIndex+dotIndexMods[q], 0, allDotFramesProxy.size())], numDotsInFrame[q]);
         }
     
         fbo.end();
@@ -319,8 +346,6 @@ void ofApp::drawDotFrame(std::vector<Dot> dotFrame, int nDots)
         ofSetColor(dotFrame[i].color);
         ofDrawCircle(dotFrame[i].pos, dotFrame[i].size);
     }
-    std::cout<<""<<std::endl;
-    
     
 }
 
@@ -389,99 +414,170 @@ void ofApp::score()
     //shouldCycle = true;
     float fc = ofGetFrameNum();
     
+    /// PHASE 1 /// PHASE 1 /// PHASE 1 /// PHASE 1 /// PHASE 1
+    
+    // 1a. start cycling
     if(fc == 0)
     {
         shouldCycle = true;
     }
     
-    // start black screen
-    
-    // fade in first body after 2 seconds, one dot per second, then start cycling
-    if(fc > 60 && (int)fc % 60 == 0 && numDotsInFrame[0] < 14)
+    // 1b. start black screen (0-1680)
+    if(fc > 0 && (int)fc % 120 == 0 && numDotsInFrame[0] < 14)
     {
         numDotsInFrame[0]++;
     }
     
-    // start cycling once faded in
-//    if(numDotsInFrame[0] == 14)
-//    {
-//        shouldCycle = true;
-//    }
+    // cycle for 2000 frames
     
-    // after one minute, start fading in second body
-    if(fc == 600)
+    // 2. melt single bod
+    if(fc == 3680)
     {
-        numBodies++;
-        numDotsInFrame.push_back(0);
-        translateVals.push_back({ofRandom(-150, 150), 0, 0});
+        stopCycleTime = 60;
+        tempFc = fc;
+        meltX = .06;
+        meltY1 = .02;
+        meltY2 = .05;
+        shouldMelt = true;
     }
     
-    // Fade in second body, one dot every 2 seconds
-    if(fc > 600 && (int)fc % 60 == 0 && numDotsInFrame[1] < 14)
+    // 3. stop cycle
+    if(fc > 3680 && fc - tempFc == stopCycleTime)
+    {
+        shouldCycle = false;
+    }
+    
+    // stay melted for 500 frames
+    
+    // 4. reset single bod
+    if(fc == 4180)
+    {
+        resetTime = 420;
+        currFrame = ofGetFrameNum();
+        shouldReset = !shouldReset;
+    }
+    
+    /// PHASE 2 /// PHASE 2 /// PHASE 2 /// PHASE 2 /// PHASE 2
+    
+    // 5. fade in second bod
+    if(fc > 4179 && (int)fc % 30 == 0 && numDotsInFrame[1] < 14)
     {
         numDotsInFrame[1]++;
     }
     
-    // start fading in third body
-    if(fc == 900)
+    // cycle for 3600 frames
+    
+    // 6. melt double bods
+    
+    if(fc == 7780)
     {
-        numBodies++;
-        numDotsInFrame.push_back(0);
-        translateVals.push_back({ofRandom(-150, 150), 0, 0});
+        stopCycleTime = 30;
+        tempFc = fc;
+        meltX = .09;
+        meltY1 = .1;
+        meltY2 = .2;
+        shouldMelt = true;
     }
     
-    // Fade in second body, one dot every 2 seconds
-    if(fc > 900 && (int)fc % 60 == 0 && numDotsInFrame[2] < 14)
+    // 7. stop cycle
+    if(fc > 7780 && fc - tempFc == stopCycleTime)
+    {
+        shouldCycle = false;
+    }
+    
+    // stay melted for 400 frames
+    
+    // 8. reset double bods
+    if(fc == 8180)
+    {
+        resetTime = 210;
+        currFrame = ofGetFrameNum();
+        shouldReset = !shouldReset;
+    }
+    
+    /// PHASE 3 /// PHASE 3 /// PHASE 3 /// PHASE 3 /// PHASE 3
+    
+    // 5. fade in third bod
+    if(fc > 8179 && (int)fc % 15 == 0 && numDotsInFrame[2] < 14)
     {
         numDotsInFrame[2]++;
     }
     
-    // melt bods
-    if(fc == 1000)
-    {
-        stopCycleTime = 60;
-        tempFc = fc;
-        meltX = .09;
-        meltY1 = .1;
-        meltY2 = .14;
-        shouldMelt = true;
-    }
     
-    // stop cycling during melt
-    if(fc > 1000 && fc - tempFc == stopCycleTime)
-    {
-        shouldCycle = false;
-    }
     
-    if(fc == 1200)
-    {
-        resetTime = 120;
-        currFrame = ofGetFrameNum();
-        shouldReset = !shouldReset;
-    }
     
-    // explode bods
-    if(fc == 1400)
-    {
-        stopCycleTime = 1;
-        tempFc = fc;
-        explodeX = 20;
-        explodeY = 20;
-        shouldExplode = true;
-    }
-    
-    // stop cycling during melt
-    if(fc > 1400 && fc - tempFc == stopCycleTime)
-    {
-        shouldCycle = false;
-    }
-    
-    if(fc == 1600)
-    {
-        resetTime = 120;
-        currFrame = ofGetFrameNum();
-        shouldReset = !shouldReset;
-    }
+//    // after one minute, start fading in second body
+//    if(fc == 600)
+//    {
+//
+//    }
+//
+//    // Fade in second body, one dot every 2 seconds
+//    if(fc > 600 && (int)fc % 60 == 0 && numDotsInFrame[1] < 14)
+//    {
+//        numDotsInFrame[1]++;
+//    }
+//
+//    // start fading in third body
+//    if(fc == 900)
+//    {
+//        numBodies++;
+//        numDotsInFrame.push_back(0);
+//        translateVals.push_back({300, 0, 0});
+//    }
+//
+//    // Fade in second body, one dot every 2 seconds
+//    if(fc > 900 && (int)fc % 60 == 0 && numDotsInFrame[2] < 14)
+//    {
+//        numDotsInFrame[2]++;
+//    }
+//
+//    // melt bods
+//    if(fc == 1000)
+//    {
+//        stopCycleTime = 60;
+//        tempFc = fc;
+//        meltX = .09;
+//        meltY1 = .1;
+//        meltY2 = .14;
+//        shouldMelt = true;
+//    }
+//
+//    // stop cycling during melt
+//    if(fc > 1000 && fc - tempFc == stopCycleTime)
+//    {
+//        shouldCycle = false;
+//    }
+//
+//    if(fc == 1200)
+//    {
+//        resetTime = 120;
+//        currFrame = ofGetFrameNum();
+//        shouldReset = !shouldReset;
+//    }
+//
+//    // explode bods
+//    if(fc == 1400)
+//    {
+//        stopCycleTime = 1;
+//        tempFc = fc;
+//        explodeX = 30;
+//        explodeY = 30;
+//        shouldExplode = true;
+//    }
+//
+//    // stop cycling during melt
+//    if(fc > 1400 && fc - tempFc == stopCycleTime)
+//    {
+//        shouldCycle = false;
+//    }
+//
+//    if(fc == 1600)
+//    {
+//        resetTime = 120;
+//        currFrame = ofGetFrameNum();
+//        shouldReset = !shouldReset;
+//    }
     
     
 }
